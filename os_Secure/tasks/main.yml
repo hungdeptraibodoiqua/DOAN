@@ -1,0 +1,199 @@
+---
+# tasks file for os_Secure
+#libpam-passwdqc package is used for config password complexity
+#check presence of libpam-passwdqc package
+- name: Check if libpam-passwdqc package is installed
+  ansible.builtin.stat:
+    path: /usr/lib/security/pam_passwdqc.so
+  register: passwdqc_package
+
+- name: Display package status
+  ansible.builtin.debug:
+    var: "{{ passwdqc_package.stat.exists | default(false) | bool }}"
+
+#install libpam-passwdqc package
+- name: Install the package for strong password checking
+  ansible.builtin.apt:
+    name: libpam-passwdqc
+    state: present
+    update_cache: true  #apt-get update
+  when: passwdqc_package.stat.exists == False
+  tags: libpam-passwdqc_install
+  become: true
+
+#config libpam package
+- name: Configure passwdqc
+  ansible.builtin.template:
+    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_passwdqc.j2
+    dest: "{{ passwdqc_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  when:
+    - passwdqc_package.stat.exists == true
+  become: true
+  tags: config_pam_passwdqc
+
+#install tally2 for loking users auth failed n times
+- name: Install tally2
+  ansible.builtin.apt:
+    name: libpam-modules
+    state: present
+  become: true
+  tags: tally2_install
+
+#config tally2
+- name: Configure_tally2
+  ansible.builtin.template:
+    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_tally2.j2
+    dest: "{{ tally2_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  become: true
+  tags: tally2_config
+
+
+#config faillock.conf file (may be it need tally2 to run)
+# - name: Configure faillock.conf
+#   ansible.builtin.template:
+#     src: /home/ansible/Desktop/DoanV2/os_Secure/templates/faillock.conf.j2
+#     dest: /etc/security/faillock.conf
+#     mode: "0644"
+#     owner: root
+#     group: root
+#   become: true
+
+#config faillog pam
+# - name: Configure faillock pam
+#   ansible.builtin.template:
+#     src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_faillock.j2
+#     dest: /usr/share/pam-configs/faillock
+#     mode: "0644"
+#     owner: root
+#     group: root
+#   become: true
+
+#config authfail pam
+- name: Configure pam authfail
+  ansible.builtin.template:
+    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_authfail.j2
+    dest: /usr/share/pam-configs/faillock_authfail
+    mode: "0644"
+    owner: root
+    group: root
+  become: true
+  
+#update pam
+- name: Update pam on Debian systems
+  ansible.builtin.command: pam-auth-update --package
+  become: true
+  # environment:
+  #   DEBIAN_FRONTEND: noninteractive
+  # changed_when: false
+  
+
+#remove insecure packages
+- name: Remove deprecated or insecure packages
+  ansible.builtin.apt:
+    name: "{{ os_security_packages_list }}"
+    state: absent
+    purge: true
+  when: os_security_packages_clean | bool
+  become: true
+
+#install auditd package
+- name: Install auditd package for writing logs
+  ansible.builtin.package:
+    name: "{{ auditd_package }}"
+    state: present
+  tags: auditd_install
+  become: true
+
+- name: Configure auditd
+  ansible.builtin.template:
+    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/auditd.conf.j2
+    dest: /etc/audit/auditd.conf
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Restart auditd
+  tags: auditd_config
+  become: true
+
+#crontab permission
+- name: Find cron files and directories
+  ansible.builtin.find:
+    paths:
+      - /etc
+    patterns:
+      - cron.hourly
+      - cron.daily
+      - cron.weekly
+      - cron.monthly
+      - cron.d
+      - crontab
+    file_type: any
+  register: cron_directories
+
+#display these files
+- name: display cron files
+  ansible.builtin.debug:
+     var: cron_directories.stdout
+
+# re-config cron files perms     
+- name: Ensure permissions on cron files and directories are configured
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: og-rwx #only owner and group (root) have full access
+  with_items: "{{ cron_directories.files }}"
+  become: true
+  
+#config permission for some file_systems (minimize access)
+#etc/passwd
+- name: Find passwd files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /etc/passwd
+    - /etc/group
+    - /etc/passwd-
+    - /etc/group-
+  register: minimize_access_passwd_files
+
+- name: Change passwd ownership to root and mode to 0644
+  ansible.builtin.file:
+    dest: "{{ item.item }}"
+    owner: "{{ os_passwd_perms.owner }}"
+    group: "{{ os_passwd_perms.group }}"
+    mode: "{{ os_passwd_perms.mode }}"
+  when: item.stat.exists
+  loop: "{{ minimize_access_passwd_files.results }}"
+  become: true
+
+#etc/shadows
+- name: Find shadow files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /etc/shadow
+    - /etc/gshadow
+    - /etc/shadow-
+    - /etc/gshadow-
+  register: minimize_access_shadow_files
+
+- name: Change shadow ownership to root and mode to 0600
+  ansible.builtin.file:
+    dest: "{{ item.item }}"
+    owner: "{{ os_shadow_perms.owner }}"
+    group: "{{ os_shadow_perms.group }}"
+    mode: "{{ os_shadow_perms.mode }}"
+  when: item.stat.exists
+  loop: "{{ minimize_access_shadow_files.results }}"
+  become: true
+
+#selinux(optional)
+
+

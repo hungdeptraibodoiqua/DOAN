@@ -1,0 +1,13 @@
+---
+# defaults file for mysql_Secure
+mysql_owner: mysql
+mysql_group: mysql
+mysql_datadir: /var/lib/mysql
+log_bin_basename: /var/lib/mysql/
+log_bin_file: /var/log/mysql/mysql-bin.log
+mysql_slow_query_log_file: /var/log/mysql-slow.log
+error_log_file: /var/log/mysql/error.log
+relay_log_file: /var/lib/mysql/ubuntu-relay-bin
+general_log_file: /var/lib/mysql/ubuntu.log
+plugin_dir: /usr/lib/mysql/plugin/
+

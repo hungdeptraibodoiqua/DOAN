@@ -1,0 +1,6 @@
+---
+# handlers file for os_Secure
+#restart auditd
+- name: Restart auditd
+  ansible.builtin.command: systemctl restart auditd.service
+  # become: true

@@ -1,0 +1,33 @@
+---
+- name: test
+  hosts: localhost
+  # become: yes
+  vars:
+    mysql_datadir: /var/lib/mysql
+    mysql_slow_query_log_file: /var/log/mysql-slow.log
+    mysql_owner: mysql
+    mysql_group: mysql
+    log_bin_basename: /var/lib/mysql/
+    error_log_dir_file: /var/log/mysql/error.log
+    relay_log_dir_file: /var/lib/mysql/ubuntu-relay-bin
+    general_log_file: /var/lib/mysql/ubuntu.log
+    plugin_dir: /usr/lib/mysql/plugin/
+  tasks:
+    - name: include file
+      ansible.builtin.include_vars: 
+        /home/hung/Desktop/DoanV2.1/mysql_credential.yml
+      
+    - name: task 25 - Disallow root login remotely
+      ansible.builtin.mysql_user:
+        login_user: "{{ mysql_root_username }}"
+        login_password: "{{ mysql_root_password }}"
+        name: root
+        host: "{{ item }}"
+        priv: "*.*:ALL"
+        state: absent
+      with_items:
+        - "%"
+      when: "item != 'localhost' and item != '127.0.0.1'"
+
+        
+
