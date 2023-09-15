@@ -77,10 +77,60 @@ max_binlog_size   = 100M
 # binlog_do_db		= include_database_name
 # binlog_ignore_db	= include_database_name
 
-
-#########################
+#-----------------------------------------------------------------------------------------#
+###for password complexity and life time###
+validate_password_policy=STRONG
 validate_password.length=9              #at least 9 character length
 validate_password.mixed_case_count=1    #at least 1 mix case (eg: 1 uppercase in password)
 validate_password.number_count=1        #at least 1 number character in password
 validate_password.special_char_count=1  #at least 1 special character in password
-default_password_lifetime=90
+#validate_password_check_user_name=ON   #check if password not contain username
+default_password_lifetime=90            #90 day
+
+###avoid dictionary attack
+###Any passwords that match entries in this dictionary file will be considered weak 
+###and may not meet the password policy requirements
+###un comment to use
+#validate_password_dictionary_file=<path to dictionary file>
+
+
+#-----------------------------------------------------------------------------------------#
+###Set Delays and Limit Failed Login Attempts to avoid brute-forcing###
+###connection_control.so plugin: used to control or restrict client connections to the MySQL server based on various criteria 
+###such as IP addresses, user accounts, and more. It provides a way to manage and control access to the database server, 
+###which can be helpful for security and access control purposes.
+
+###FORCE_PLUS_PERMANENT: to enforce strict rules regarding failed login attempts, 
+###and these rules will remain until you change or remove them from the configuration.
+
+plugin-load-add=connection_control.so
+connection-control=FORCE_PLUS_PERMANENT                                      
+connection-control-failed-login-attempts=FORCE_PLUS_PERMANENT
+connection_control_failed_connections_threshold=5
+connection_control_min_connection_delay=60000    #milisecond - ms = 1 minute
+connection_control_max_connection_delay=1920000  #32 minutes
+
+#-----------------------------------------------------------------------------------------#
+###The local_infile parameter dictates whether files located on the MySQL client's computer 
+###can be loaded or selected via LOAD DATA INFILE or SELECT local_file
+###should disable
+local_infile=OFF
+
+#-----------------------------------------------------------------------------------------#
+###disable --skip-grant-tables: This option causes mysqld to start without using the privilege system
+###If this option is used, all clients of the affected server will have unrestricted access to all databases.
+skip-grant-tables = FALSE
+
+#-----------------------------------------------------------------------------------------#
+###skip symbolic link (or commonly known as Symlink): a special type of file used to link individual folders together. 
+###The links will point to their actual location.
+###Prevents symbolic links from being used for database files. This is especially important
+###when MySQL is executing as root as arbitrary files may be overwritten. 
+###The symboliclinks option might allow someone to direct actions by the MySQL server to other files and/or directories.
+skip-symbolic-links = YES
+
+#-----------------------------------------------------------------------------------------#
+###The log_error_verbosity system variable, set to 2 by default, specifies the verbosity of
+###events sent to the MySQL error log. A value of 2 enables logging of error and warning
+###messages, a value of 3 also includes informational logging, a value of 1 logs only errors
+log_error_verbosity = 2

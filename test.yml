@@ -12,22 +12,15 @@
     relay_log_dir_file: /var/lib/mysql/ubuntu-relay-bin
     general_log_file: /var/lib/mysql/ubuntu.log
     plugin_dir: /usr/lib/mysql/plugin/
+    secure_file_priv: /var/lib/mysql-files/
   tasks:
     - name: include file
       ansible.builtin.include_vars: 
-        /home/hung/Desktop/DoanV2.1/mysql_credential.yml
+        /home/hung/Desktop/DOAN/mysql_credential.yml
       
-    - name: task 25 - Disallow root login remotely
-      ansible.builtin.mysql_user:
-        login_user: "{{ mysql_root_username }}"
-        login_password: "{{ mysql_root_password }}"
-        name: root
-        host: "{{ item }}"
-        priv: "*.*:ALL"
-        state: absent
-      with_items:
-        - "%"
-      when: "item != 'localhost' and item != '127.0.0.1'"
+    - name: test  
+      
+
 
         
 

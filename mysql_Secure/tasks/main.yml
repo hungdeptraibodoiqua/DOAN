@@ -5,7 +5,7 @@
 ###include credential file
 - name: include credential mysql var file
   ansible.builtin.include_vars:
-    file: /home/ansible/Desktop/DoanV2/mysql_credential.yml #store 2 variables: mysql_root_username and mysql_root_password
+    file: /home/hung/Desktop/DOAN/mysql_credential.yml #store 2 variables: mysql_root_username and mysql_root_password
 
 ###task 1:check mysql and print version installed
 - name: task 1 - Get MySQL version
@@ -309,6 +309,7 @@
     var: mysql_users_no_password.stdout | bool
 
 ###task 25: disallow remote login with root
+###for login with: sudo mysql -u mysql_root_username -p
 - name: task 25 - Disallow root login remotely
   ansible.builtin.command: 'mysql -u{{ mysql_root_username }} -p{{ mysql_root_password }} -e "{{ item }}"'
   with_items:
@@ -316,13 +317,35 @@
   check_mode: false
   # changed_when: false
   become: true
-  
+
+###for login with: sudo mysql
+# - name: Disallow root login remotely
+#   ansible.builtin.command: 'mysql -NBe "{{ item }}"'
+#   with_items:
+#     - DELETE FROM mysql.user WHERE User='{{ mysql_root_username }}' AND Host NOT IN ('localhost', '127.0.0.1')
+#   # changed_when: false
+#   become: true
+
+###task 26: uninstall deamon-memcache
+###if this plugin not exists, this query will return error 1305: PLUGIN daemon_memcached does not exist
+- name: task 26 - uninstall deamon-memcache
+  community.mysql.mysql_query:
+    login_user: "{{ mysql_root_username }}"
+    login_password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock 
+    query: "uninstall plugin daemon_memcached;"
+  ignore_errors: true
+  become: true
+
+###task 27: 
+- name: task27 - 
 ###end of general section###
 
-###task : password complexity (0644)
+###additional config###
+###task : password complexity (0644), Limit Failed Login Attempts and set time delay
 - name: config passwd policy (length, complexity, lifetime)
   ansible.builtin.template:
-    src: mysql_Secure/templates/mysqld.cnf.j2
+    src: /home/hung/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf.j2
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
     mode: 0644
   become: true
