@@ -57,8 +57,6 @@
   when: "'/bin/false' not in interact_login.stdout_lines and '/sbin/nologin' not in interact_login.stdout_lines"
   become: true
 
-###file permission section####
-
 ###task 5: check /var/lib/mysql file
 - name: task 5 - check /var/lib/mysql
   ansible.builtin.stat:
@@ -232,11 +230,6 @@
   become: true
   with_items: "{{ file_inside.files }}"
 
-###end file permission section####
-
-
-###general section###
-
 ###task 21: ensure Test database non-exists
 - name: task 21 - Find and remove databases
   ansible.builtin.mysql_db:
@@ -337,13 +330,8 @@
   ignore_errors: true
   become: true
 
-###task 27: 
-- name: task27 - 
-###end of general section###
-
-###additional config###
-###task : password complexity (0644), Limit Failed Login Attempts and set time delay
-- name: config passwd policy (length, complexity, lifetime)
+###task 27 : password complexity (0644), Limit Failed Login Attempts and set time delay
+- name: task 27 - config passwd policy (length, complexity, lifetime)
   ansible.builtin.template:
     src: /home/hung/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf.j2
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -351,3 +339,4 @@
   become: true
   notify: 
     - restart mysql 
+  

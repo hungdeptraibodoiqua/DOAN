@@ -1,6 +1,6 @@
 ---
 - name: test
-  hosts: localhost
+  hosts: openstack
   # become: yes
   vars:
     mysql_datadir: /var/lib/mysql
@@ -13,12 +13,76 @@
     general_log_file: /var/lib/mysql/ubuntu.log
     plugin_dir: /usr/lib/mysql/plugin/
     secure_file_priv: /var/lib/mysql-files/
+    
+    openstack_file_owner: stack
+    openstack_file_group: stack
   tasks:
+    # - name: include file
+    #   ansible.builtin.include_vars: 
+    #     /home/hung/Desktop/DOAN/mysql_credential.yml
+
     - name: include file
       ansible.builtin.include_vars: 
-        /home/hung/Desktop/DOAN/mysql_credential.yml
-      
-    - name: test  
+        /home/ansible/Desktop/DOAN/mysql_credential.yml
+
+    ##check group named stack
+    - name: Check if the group exists
+      ansible.builtin.command: getent group stack
+      register: group_check
+      ignore_errors: yes  # Ignore errors since the group might not exist
+    
+    - name: Create the group if it doesn't exist
+      ansible.builtin.group:
+        name: "{{ openstack_file_group }}"
+        state: present
+      when: group_check.rc != 0
+
+    - name: Display the result
+      ansible.builtin.debug:
+        msg: "Group '{{ openstack_file_group }}' {{ 'was created' if group_check.rc != 0 else 'already exists' }}"
+    
+    ##check keystone.conf
+    - name: check /etc/keystone/keystone.conf
+      ansible.builtin.stat:
+        path: /etc/keystone/keystone.conf
+      register: keystone_file_status
+
+    - name: show output
+      ansible.builtin.debug:
+        var: keystone_file_status
+
+    - name: set appropriate permission if exists
+      ansible.builtin.file:
+        path: /etc/keystone/keystone.conf
+        owner: "{{ openstack_file_owner }}"
+        group: "{{ openstack_file_group }}"
+        mode: 0600
+      become: yes
+      when: keystone_file_status.stat.exists == true
+
+    ##check keystone-paste.ini
+    - name: check keystone-paste.ini file
+      ansible.builtin.stat:
+        path: /etc/keystone/keystone-paste.ini
+      register: keystone-paste_file_status
+
+    - name: show output
+      ansible.builtin.debug:
+        var: keystone-paste_file_status
+    
+    - name: set appropriate permission if exists
+      ansible.builtin.file:
+        path: /etc/keystone/keystone-paste.ini
+        owner: "{{ openstack_file_owner }}"
+        group: "{{ openstack_file_group }}"
+        mode: 0600
+      become: yes
+      when: keystone-paste_file_status.exists == true
+
+    ##check policy.json file
+
+    ##check logging.conf file
+
       
 
 

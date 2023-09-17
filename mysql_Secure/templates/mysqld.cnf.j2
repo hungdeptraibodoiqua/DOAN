@@ -43,7 +43,7 @@ key_buffer_size		= 16M
 # the first time they are touched
 myisam-recover-options  = BACKUP
 
-# max_connections        = 151
+max_connections        = 150
 
 # table_open_cache       = 4000
 
@@ -134,3 +134,38 @@ skip-symbolic-links = YES
 ###events sent to the MySQL error log. A value of 2 enables logging of error and warning
 ###messages, a value of 3 also includes informational logging, a value of 1 logs only errors
 log_error_verbosity = 2
+
+#-----------------------------------------------------------------------------------------#
+###The log-raw MySQL option determines whether passwords are rewritten by the server
+###so as not to appear in log files as plain text. If log-raw is enabled, then passwords are
+###written to the various log files (general query log, slow query log, and binary log) in plain text.
+log-raw = OFF
+
+#-----------------------------------------------------------------------------------------#
+###0 - authenticate with the mysql_native_password plugin
+###1 - authenticate with the mysql_old_password plugin
+###2 - authenticate with the sha256_password plugin
+###When old_passwords is set to 1 the PASSWORD() function will create password hashes
+###with a very weak hashing algorithm which might be easy to break if captured by an attacker.  MySQL pre-4.1 password hashing algorithm
+#old_passwords = 0  ##checking before implementing
+
+###This option dictates whether the server will deny connections by clients that attempt to
+###use accounts that have their password stored in the mysql_old_password format
+secure_auth=ON
+
+#-----------------------------------------------------------------------------------------#
+###SSL certificate
+ssl_ca=ca.pem
+ssl_cert=server-cert.pem
+ssl_key=server-key.pem
+require_secure_transport=ON
+
+ssl-ca = /etc/mysql/ca-cert.pem
+ssl-cert = /etc/mysql/server-cert.pem
+ssl-key = /etc/mysql/server-key.pem
+
+#-----------------------------------------------------------------------------------------#
+###The password which the client uses is stored in the MASTER info repository, which by
+###default is a plaintext file. The TABLE MASTER info repository is a bit safer, but with
+###filesystem access it's still possible to gain access to the password the SLAVE is using
+master_info_repository = TABLE
