@@ -1,2 +1,7 @@
 ---
-
+keystone_path: /etc/keystone/
+horizon_path: /etc/openstack-dashboard/local_settings.py
+nova_path: /etc/nova/
+cinder_path: /etc/cinder/
+manila_path: /etc/manila/
+neutron_path: /etc/neutron/
