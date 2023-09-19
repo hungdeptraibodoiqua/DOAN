@@ -127,29 +127,8 @@
   loop: "{{ binlog_files.files }}"
   become: true
   
-###task 8: slow query log  
-- name: task 8 - check stat of slow query log file
-  ansible.builtin.stat:
-    path: "{{ mysql_slow_query_log_file }}"
-  register: slow_log_stat
-  become: true
-
-- name: show output
-  ansible.builtin.debug:
-    var: slow_log_stat | bool
-
-- name: task 8 - Set appropriate permission for slow query log file (if configured).
-  ansible.builtin.file:
-    path: "{{ mysql_slow_query_log_file }}"
-    state: file
-    owner: mysql
-    group: "{{ mysql_log_file_group }}"
-    mode: 0600
-  when: (slow_log_stat | bool) == true
-  become: true
-  
-#task 9: Ensure mysql error log file Have Appropriate Permissions
-- name: task 9 - Check if MySQL error log file exists
+#task 8: Ensure mysql error log file Have Appropriate Permissions
+- name: task 8 - Check if MySQL error log file exists
   ansible.builtin.stat:
     path: "{{ error_log_file }}"
   register: log_file_info
@@ -161,7 +140,7 @@
 - ansible.builtin.debug:
     var: mysql_error_log_exists
 
-- name: task 9 - error log file permission
+- name: task 8 - error log file permission
   ansible.builtin.file:
     path: "{{ error_log_file }}"
     owner: mysql
@@ -170,7 +149,7 @@
   when: log_file_info.stat.exists == false
   become: true
 
-###task 10: Ensure mysql relay log file Have Appropriate Permissions
+###task 9: Ensure mysql relay log file Have Appropriate Permissions
 - name: relay log status
   ansible.builtin.stat:
     path: "{{ relay_log_file }}"
@@ -181,7 +160,7 @@
   ansible.builtin.debug:
     var: relay_log_basename | bool
 
-- name: task 10 - config appropriate permission if exists
+- name: task 9 - config appropriate permission if exists
   ansible.builtin.file:
     path: "{{ relay_log_file }}"
     owner: "{{ mysql_owner }}"
@@ -190,8 +169,8 @@
   when: relay_log_basename.stat.exists == true
   become: true
 
-###task 11: config general_log_file permission
-- name: task 11 - general log file status
+###task 10: config general_log_file permission
+- name: task 10 - general log file status
   ansible.builtin.stat:
     path: "{{ general_log_file }}"
   register: general_log_stat
@@ -201,7 +180,7 @@
   ansible.builtin.debug:
     var: general_log_stat
 
-- name: task 11 - set permission
+- name: task 10 - set permission
   ansible.builtin.file:
     path: "{{ general_log_file }}"
     owner: "{{ mysql_owner }}"
@@ -210,29 +189,29 @@
   when: general_log_stat.stat.exists == true
   become: true
 
-###task 12: change permission of plug in directory
-- name: task 12 - check plugin directory  
+###task 11: change permission of plug in directory
+- name: task 11 - check plugin directory  
   ansible.builtin.find:
     paths: "{{ plugin_dir }}"
     recurse: yes
     file_type: file
   register: file_inside
 
-- name: task 12 - Change permissions of directory
+- name: task 11 - Change permissions of directory
   ansible.builtin.file:
     path: "{{ plugin_dir }}"
     mode: "0550"
   become: true
 
-- name: task 12 - Change permissions of files inside the directory
+- name: task 11 - Change permissions of files inside the directory
   ansible.builtin.file:
     path: "{{ item.path }}"
     mode: "0550"
   become: true
   with_items: "{{ file_inside.files }}"
 
-###task 13: ensure Test database non-exists
-- name: task 13 - Find and remove databases
+###task 12: ensure Test database non-exists
+- name: task 12 - Find and remove databases
   ansible.builtin.mysql_db:
     login_user: "{{ mysql_root_username }}"
     login_password: "{{ mysql_root_password }}"
@@ -257,8 +236,8 @@
   ansible.builtin.debug:
     msg: "DONE"
 
-###task 14: check if anonymous user present??
-- name: task 14 - check if anonymous user exists???
+###task 13: check if anonymous user present??
+- name: task 13 - check if anonymous user exists???
   community.mysql.mysql_query:
     login_user: "{{ mysql_root_username }}"
     login_password: "{{ mysql_root_password }}"
@@ -272,8 +251,8 @@
     msg: "Anonymous MySQL user exists"
   when: not anonymous_user_result
     
-###task 15: delete anonymous user 
-- name: task 15 - delete anonymous user if exists
+###task 14: delete anonymous user 
+- name: task 14 - delete anonymous user if exists
   community.mysql.mysql_user:
     login_user: "{{ mysql_root_username }}"
     login_password: "{{ mysql_root_password }}"
@@ -289,8 +268,8 @@
     var: result
   when: not anonymous_user_result
 
-###task 16: checking non-pass users    
-- name: task 16 - Get MySQL Users with No Password
+###task 15: checking non-pass users    
+- name: task 15 - Get MySQL Users with No Password
   ansible.builtin.command: 
     "mysql -u{{ mysql_root_username }} -p{{ mysql_root_password }} -e 'SELECT user FROM mysql.user 
         WHERE (length(authentication_string)=0 OR authentication_string=\"\")'"
@@ -302,9 +281,9 @@
   ansible.builtin.debug:
     var: mysql_users_no_password.stdout | bool
 
-###task 17: disallow remote login with root
+###task 16: disallow remote login with root
 ###for login with: sudo mysql -u mysql_root_username -p
-- name: task 17 - Disallow root login remotely
+- name: task 16 - Disallow root login remotely
   ansible.builtin.command: 'mysql -u{{ mysql_root_username }} -p{{ mysql_root_password }} -e "{{ item }}"'
   with_items:
     - DELETE FROM mysql.user WHERE User='{{ mysql_root_username }}' AND Host NOT IN ('localhost', '127.0.0.1')
@@ -322,7 +301,7 @@
 
 ###task 26: uninstall deamon-memcache
 ###if this plugin not exists, this query will return error 1305: PLUGIN daemon_memcached does not exist
-- name: task 18 - uninstall deamon-memcache
+- name: task 17 - uninstall deamon-memcache
   community.mysql.mysql_query:
     login_user: "{{ mysql_root_username }}"
     login_password: "{{ mysql_root_password }}"
@@ -331,8 +310,8 @@
   ignore_errors: true
   become: true
 
-###task 19 : password complexity (0644), Limit Failed Login Attempts and set time delay
-- name: task 19 - config passwd policy (length, complexity, lifetime)
+###task 18 : password complexity (0644), Limit Failed Login Attempts and set time delay
+- name: task 18 - config passwd policy (length, complexity, lifetime)
   ansible.builtin.template:
     src: /home/hung/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf.j2
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
