@@ -1,0 +1,4 @@
+---
+# defaults file for ApacheHTTP_secure
+##sudo openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out apache.crt -keyout apache.key: gen ssl
+site_default_path: /etc/apache2/sites-enabled/
