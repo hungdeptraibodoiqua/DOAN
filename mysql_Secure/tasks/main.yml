@@ -1,11 +1,13 @@
 ---
-###tasks file for mysql_Secure
-###using CIS benmark for hardening mysql###
+###tasks file for mysql_Secure: using mariadb
+###using CIS benmark for hardening mariadb server###
 
 ###include credential file
+#store 2 variables: mysql_root_username and mysql_root_password
+#it will be encrypted by ansible-vault
 - name: include credential mysql var file
   ansible.builtin.include_vars:
-    file: /home/hung/Desktop/DOAN/mysql_credential.yml #store 2 variables: mysql_root_username and mysql_root_password
+    file: /home/hung/Desktop/DOAN/mysql_credential.yml 
 
 ###task 1:check mysql and print version installed
 - name: task 1 - Get MySQL version
@@ -27,20 +29,19 @@
   ansible.builtin.debug:
     var: user_for_operate_mysql.stdout_lines
 
-###task 3: create if non-exists
-- name: task 3 - create if non-exists
-  ansible.builtin.raw:
-    '/usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || :
-    /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/false \
-    -c "MySql Server" -u 27 mysql >/dev/null 2>&1 || :'
+- name: create if non-exists
+  ansible.builtin.raw: 
+      '/usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || : 
+      /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/false \ 
+      -c "MariaDB Server" -u 27 mysql >/dev/null 2>&1 || :'
   when: user_for_operate_mysql.failed
   become: true
 
-###task 4: prevent interactive login
+###task 3: prevent interactive login
 ##getent: Get entries from administrative database.
 ###When created, the MySQL user may have interactive access to the operating system,
 ###which means that the MySQL user could login to the host as any other user would
-- name: task 4 - interactive login
+- name: task 3 - interactive login
   ansible.builtin.raw:
     'getent passwd mysql | egrep "^.*[\/bin\/false|\/sbin\/nologin]$"'  ###Lack of output implies a fail
   register: interact_login
@@ -52,8 +53,8 @@
     var: interact_login.stdout_lines
 
 ###re-config
-- name: task 4 - re-config
-  ansible.builtin.raw: 'usermod -s /bin/false mysql'
+- name: task 3 - re-config
+  ansible.builtin.raw: 'usermod -s /bin/false mysql'  #or can use this: usermod -s /sbin/nologin mysql
   when: "'/bin/false' not in interact_login.stdout_lines and '/sbin/nologin' not in interact_login.stdout_lines"
   become: true
 
