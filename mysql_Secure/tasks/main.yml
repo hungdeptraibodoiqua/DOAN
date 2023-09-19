@@ -1,6 +1,6 @@
 ---
-###tasks file for mysql_Secure: using mariadb
-###using CIS benmark for hardening mariadb server###
+###tasks file for mysql_Secure
+###using CIS benmark for hardening mysql server###
 
 ###include credential file
 #store 2 variables: mysql_root_username and mysql_root_password
@@ -33,7 +33,7 @@
   ansible.builtin.raw: 
       '/usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || : 
       /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/false \ 
-      -c "MariaDB Server" -u 27 mysql >/dev/null 2>&1 || :'
+      -c "Sysql Server" -u 27 mysql >/dev/null 2>&1 || :'
   when: user_for_operate_mysql.failed
   become: true
 
