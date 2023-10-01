@@ -1,7 +1,0 @@
-Name: conifg passwdqc for password complexity  #name for this config file
-Default: yes  #enabled by default
-Priority: 1024
-Conflicts: cracklib #cracklib is a pakage for password strength checking and it Conflicts with passwdqc
-Password-Type: Primary #This line indicates that the configuration is related to primary passwords.
-Password:
-  requisite     pam_passwdqc.so {{ os_auth_pam_passwdqc_options }}

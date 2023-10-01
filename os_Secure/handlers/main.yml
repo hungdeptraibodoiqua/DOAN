@@ -1,6 +1,12 @@
 ---
 # handlers file for os_Secure
-#restart auditd
-- name: Restart auditd
-  ansible.builtin.command: systemctl restart auditd.service
-  # become: true
+- name: reload-deamon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
+#update grub
+- name: update-grub
+  ansible.builtin.command:
+    update-grub
+  become: true

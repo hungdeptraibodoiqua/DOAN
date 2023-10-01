@@ -1,199 +1,124 @@
----
-# tasks file for os_Secure
-#libpam-passwdqc package is used for config password complexity
-#check presence of libpam-passwdqc package
-- name: Check if libpam-passwdqc package is installed
-  ansible.builtin.stat:
-    path: /usr/lib/security/pam_passwdqc.so
-  register: passwdqc_package
+---    
+###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
+- name: task 1 - Separate partition (/tmp, /var, /var/tmp... using fstab)
+  ansible.builtin.template:
+    src: "{{ new_fstab_path }}"
+    dest: "{{ origin_fstab_path }}/fstab"
+    mode: 0644
+  become: true
+  notify: reload-deamon
+  tags: task1
 
-- name: Display package status
+##if system not mounted before, run "mount" command, else run "mount -o remount" command
+# - name: remount
+#   ansible.builtin.command: 
+#     mount /tmp
+#   become: true
+
+##remount /tmp, /var, /var/tmp, /var/log, /var/log/audit, /home
+- name: remount
+  ansible.builtin.command: 
+    mount -o remount /tmp #/var/tmp; /var/log; /var/log/audit; /home
+  become: true
+
+- name: check result
+  ansible.builtin.raw:
+    "findmnt -nk /tmp && findmnt -nk /var && findmnt -kn /var/tmp && findmnt -kn /var/log 
+    && findmnt -kn /home && findmnt -kn /dev/shm"
+  register: mount_output
+  
+- name: display output
   ansible.builtin.debug:
-    var: "{{ passwdqc_package.stat.exists | default(false) | bool }}"
+    var: mount_output.stdout_lines
 
-#install libpam-passwdqc package
-- name: Install the package for strong password checking
-  ansible.builtin.apt:
-    name: libpam-passwdqc
-    state: present
-    update_cache: true  #apt-get update
-  when: passwdqc_package.stat.exists == False
-  tags: libpam-passwdqc_install
-  become: true
-
-#config libpam package
-- name: Configure passwdqc
-  ansible.builtin.template:
-    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_passwdqc.j2
-    dest: "{{ passwdqc_path }}"
-    mode: "0644"
+##reconf permission bootloader config
+# chown root:root /boot/grub/grub.cfg
+# chmod u-x,go-rwx /boot/grub/grub.cfg: 600
+- name: task 2 - reconfig permission of grub.cfg
+  ansible.builtin.file:
+    path: "{{ boot_loader_path }}"
     owner: root
     group: root
-  when:
-    - passwdqc_package.stat.exists == true
+    mode: 0600
   become: true
-  tags: config_pam_passwdqc
 
-#install tally2 for loking users auth failed n times
-- name: Install tally2
+##process hardening
+- name: task 3 - Ensure prelink is not installed
   ansible.builtin.apt:
-    name: libpam-modules
-    state: present
-  become: true
-  tags: tally2_install
-
-#config tally2
-- name: Configure_tally2
-  ansible.builtin.template:
-    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_tally2.j2
-    dest: "{{ tally2_path }}"
-    mode: "0644"
-    owner: root
-    group: root
-  become: true
-  tags: tally2_config
-
-
-#config faillock.conf file (may be it need tally2 to run)
-# - name: Configure faillock.conf
-#   ansible.builtin.template:
-#     src: /home/ansible/Desktop/DoanV2/os_Secure/templates/faillock.conf.j2
-#     dest: /etc/security/faillock.conf
-#     mode: "0644"
-#     owner: root
-#     group: root
-#   become: true
-
-#config faillog pam
-# - name: Configure faillock pam
-#   ansible.builtin.template:
-#     src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_faillock.j2
-#     dest: /usr/share/pam-configs/faillock
-#     mode: "0644"
-#     owner: root
-#     group: root
-#   become: true
-
-#config authfail pam
-- name: Configure pam authfail
-  ansible.builtin.template:
-    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/pam_authfail.j2
-    dest: /usr/share/pam-configs/faillock_authfail
-    mode: "0644"
-    owner: root
-    group: root
-  become: true
-  
-#update pam
-- name: Update pam on Debian systems
-  ansible.builtin.command: pam-auth-update --package
-  become: true
-  # environment:
-  #   DEBIAN_FRONTEND: noninteractive
-  # changed_when: false
-  
-
-#remove insecure packages
-- name: Remove deprecated or insecure packages
-  ansible.builtin.apt:
-    name: "{{ os_security_packages_list }}"
+    name:
+      - prelink
     state: absent
     purge: true
-  when: os_security_packages_clean | bool
   become: true
 
-#install auditd package
-- name: Install auditd package for writing logs
-  ansible.builtin.package:
-    name: "{{ auditd_package }}"
-    state: present
-  tags: auditd_install
-  become: true
-
-- name: Configure auditd
+- name: task4 - config ASLR, ptrace_scope
   ansible.builtin.template:
-    src: /home/ansible/Desktop/DoanV2/os_Secure/templates/auditd.conf.j2
-    dest: /etc/audit/auditd.conf
-    owner: root
-    group: root
-    mode: "0640"
-  notify: Restart auditd
-  tags: auditd_config
+    src: "{{ sysctl_src }}"
+    dest: "{{ sysctl_dest }}/sysctl.conf"
+    mode: 0644
   become: true
 
-#crontab permission
-- name: Find cron files and directories
-  ansible.builtin.find:
-    paths:
-      - /etc
-    patterns:
-      - cron.hourly
-      - cron.daily
-      - cron.weekly
-      - cron.monthly
-      - cron.d
-      - crontab
-    file_type: any
-  register: cron_directories
-
-#display these files
-- name: display cron files
-  ansible.builtin.debug:
-     var: cron_directories.stdout
-
-# re-config cron files perms     
-- name: Ensure permissions on cron files and directories are configured
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    owner: root
-    group: root
-    mode: og-rwx #only owner and group (root) have full access
-  with_items: "{{ cron_directories.files }}"
+##disable apport.service (enabled=0)
+- name: task 5 - Ensure Automatic Error Reporting is not enabled
+  ansible.builtin.template:
+    src: "{{ apport_src }}"
+    dest: "{{ apport_dest }}/apport"
+    mode: 0644
   become: true
+
+# systemctl stop apport.service
+# systemctl --now disable apport.service
+- name: stop apport service 
+  ansible.builtin.systemd:
+    name: apport.service
+    state: stopped
+    enabled: false
+  become: true
+  notify: reload-deamon
+
+
+##you also can just remove this service 
+# - name: remove apport service
+#   ansible.builtin.apt:
+#     name: apport
+#     state: absent
+#     purge: true
+#   become: true
+
+##Mandatory access control
+##AppArmor provides a Mandatory Access Control (MAC)
+- name: task 6 - install AppArmor
+  ansible.builtin.apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    state: latest
+  become: true
+
+#GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
+- name: config AppArmor
+  ansible.builtin.template:
+    src: "{{ grub_src }}"
+    dest: "{{ grb_dest }}/grub"
+    mode: 0644
+  become: true
+  notify: update-grub
+
+## apparmor_status | grep profiles
+## apparmor_status | grep processes
+##set enforce mode or complain mode
+##aa-enforce /etc/apparmor.d/*
+#or
+##aa-complain /etc/apparmor.d/*
+- name: set enforce mode
+  ansible.builtin.raw: aa-enforce /etc/apparmor.d/*
+  become: true
+
+- name: set complain mode
+  ansible.builtin.raw: aa-complain /etc/apparmor.d/*
+  become: true
+
   
-#config permission for some file_systems (minimize access)
-#etc/passwd
-- name: Find passwd files
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop:
-    - /etc/passwd
-    - /etc/group
-    - /etc/passwd-
-    - /etc/group-
-  register: minimize_access_passwd_files
-
-- name: Change passwd ownership to root and mode to 0644
-  ansible.builtin.file:
-    dest: "{{ item.item }}"
-    owner: "{{ os_passwd_perms.owner }}"
-    group: "{{ os_passwd_perms.group }}"
-    mode: "{{ os_passwd_perms.mode }}"
-  when: item.stat.exists
-  loop: "{{ minimize_access_passwd_files.results }}"
-  become: true
-
-#etc/shadows
-- name: Find shadow files
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop:
-    - /etc/shadow
-    - /etc/gshadow
-    - /etc/shadow-
-    - /etc/gshadow-
-  register: minimize_access_shadow_files
-
-- name: Change shadow ownership to root and mode to 0600
-  ansible.builtin.file:
-    dest: "{{ item.item }}"
-    owner: "{{ os_shadow_perms.owner }}"
-    group: "{{ os_shadow_perms.group }}"
-    mode: "{{ os_shadow_perms.mode }}"
-  when: item.stat.exists
-  loop: "{{ minimize_access_shadow_files.results }}"
-  become: true
-
-#selinux(optional)
+    
 
 

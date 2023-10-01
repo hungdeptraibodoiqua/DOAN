@@ -26,20 +26,11 @@
 
     site_default_path: /etc/apache2/sites-enabled
   tasks:
-    - name: include file
-      ansible.builtin.include_vars: 
-        /home/hung/Desktop/DOAN/mysql_credential.yml
+    # - name: include file
+    #   ansible.builtin.include_vars: 
+    #     /home/hung/Desktop/DOAN/mysql_credential.yml
 
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
-
-    ##check group named stack
-   
-    - name: enable https for default site (testing)
-      ansible.builtin.template:
-        src: "/home/hung/Desktop/DOAN/ApacheHTTP_secure/templates/000-default.conf.j2"
-        dest: "{{ site_default_path }}/000-default.conf"
-        mode: 0644
-      become: true
 
