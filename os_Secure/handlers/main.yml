@@ -10,3 +10,27 @@
   ansible.builtin.command:
     update-grub
   become: true
+
+#systemd-timesyncd.service is disabled
+- name: disable-systemd-timesyncd.service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd.service
+    state: stopped
+    enabled: false
+  become: true
+
+#unintall chrony
+- name: uninstall-chrony
+  ansible.builtin.apt:
+    name: chrony
+    state: absent
+    purge: true
+  become: true
+
+#unintall NTP 
+- name: uninstall-NTP
+  ansible.builtin.apt:
+    name: ntp 
+    state: absent
+    purge: true
+  become: true

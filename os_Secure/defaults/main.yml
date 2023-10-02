@@ -17,3 +17,11 @@ apport_dest: /etc/default
 
 grub_src: /home/ansible/Desktop/DOAN/os_Secure/templates/grub.j2
 grb_dest: /etc/default
+
+issue_net_src: /home/ansible/Desktop/DOAN/os_Secure/templates/issue.net.j2
+issue_net_dest: /etc/issue.net
+
+motd_path: /etc/motd
+
+XDMCP_custom_src: /home/ansible/Desktop/DOAN/os_Secure/templates/XDMCPcustom.conf.j2
+XDMCP_custom_dest: /etc/gdm3/custom.conf

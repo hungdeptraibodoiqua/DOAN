@@ -118,7 +118,151 @@
   ansible.builtin.raw: aa-complain /etc/apparmor.d/*
   become: true
 
-  
-    
+##Command Line Warning Banners
+- name: task 7 - Ensure local login warning banner is configured properly
+  ansible.builtin.template:
+    src: "{{ issue_net_src }}"
+    dest: "{{ issue_net_dest }}"
+    mode: 0600
+    owner: root
+    group: root
+  become: true
 
+##Ensure permissions on /etc/motd are configured
 
+##solution 1
+# - name: Check if /etc/motd exists
+#   ansible.builtin.stat:
+#     path: "{{ motd_path }}"
+#   register: motd_file_info
+#   # Ignore errors if the file doesn't exist
+#   ignore_errors: yes
+#   tags: test
+
+# - name: show output
+#   ansible.builtin.debug:
+#     var: motd_file_info
+#   tags: test2
+
+# - name: task 8 - Ensure permissions on /etc/motd are configured
+#   ansible.builtin.file:
+#     path: "{{ motd_path }}"
+#     owner: root
+#     group: root
+#     mode: 0600
+#   become: true
+#   when: motd_file_info.stat.exists == true
+
+##solution 2
+- name: task 8 - Ensure permissions on /etc/motd are configured
+  ansible.builtin.file:
+    path: "{{ motd_path }}"
+    state: absent
+  become: true
+
+##GNOME Display Manager (testing: if run apt purge gdm3 -> remove GNOME GUI of ubuntu)
+# - name: uninstall gdm3 (use this for non gui environment)
+#   ansible.builtin.apt:
+#     name: gdm3
+#     state: absent
+#     purge: true
+#   become: true
+
+- name: task 9 - Ensure XDCMP is not enabled
+  ansible.builtin.template:
+    src: "{{ XDMCP_custom_src }}"
+    dest: "{{ XDMCP_custom_dest }}"
+    mode: 0644
+    owner: root
+    group: root
+  become: true
+
+##Configure Time Synchronization
+##ensure just 1 in 3 time sync in use: NTP, chrony, systemd-timesyncd.service
+#case 1: use chrony
+# - name: task 10 - use chrony 
+#   ansible.builtin.apt:
+#     name: chrony
+#     state: latest
+#   become: true
+#   notify:
+#     - disable-systemd-timesyncd.service
+#     - uninstall-NTP
+#   ignore_errors: true  #some service will return error if not exists when uninstall
+
+#case 2: use systemd-timesyncd.service
+- name: task 10 - use systemd-timesyncd.service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd.service
+    state: started
+  become: true
+  notify:
+    - uninstall-chrony
+    - uninstall-NTP
+  ignore_errors: true  #some service will return error if not exists when uninstall
+
+# #case 3: use NTP (need to config)
+# - name: task 10 - use NTP 
+#   ansible.builtin.apt:
+#     name: ntp
+#     state: latest
+#   become: true
+#   notify:
+#     - uninstall-chrony
+#     - disable-systemd-timesyncd.service
+#   ignore_errors: true  #some service will return error if not exists when uninstall
+
+#task: config chrony, Ensure chrony is running as user _chrony
+#task: Ensure chrony is running as user _chrony
+#task: config systemd-timesyncd.service
+#task: config ntp 
+#task: Ensure ntp is configured with authorized timeserver
+#task: Ensure ntp is running as user ntp 
+
+##Ensure X Window System is not installed (do not run this task if you need GUI to use)
+# - name: task - Ensure X Window System is not installed (do not run if still need GUI)
+#   ansible.builtin.apt:
+#     name: xserver-xorg*
+#     state: absent
+#     purge: true
+#   become: true
+
+##Ensure Avahi Server is not installed 
+- name: stop avahi-daemon service 
+  ansible.builtin.systemd:
+    name: avahi-daaemon.service
+    state: stopped
+  become: true
+  ignore_errors: true
+
+- name: stop avahi-daemon.socket
+  ansible.builtin.systemd:
+    name: avahi-daemon.socket
+    state: stopped
+  become: true
+  ignore_errors: true
+
+- name: task - Ensure Avahi Server is not installed 
+  ansible.builtin.apt:
+    name: avahi-daemon
+    state: absent
+    purge: true
+  become: true
+  ignore_errors: true
+
+##Ensure Common Unix Print System (CUPS) is not installed
+- name: task - Ensure Common Unix Print System (CUPS) is not installed (don't run this task if need to use this service)
+  ansible.builtin.apt:
+    name: cups 
+    state: absent
+    purge: true
+  become: true
+
+##Ensure DHCP Server is not installed
+- name: Ensure DHCP Server is not installed (don't run this task if need to use this service)
+  ansible.builtin.apt:
+    name: isc-dhcp-server
+    state: absent
+    purge: true
+  become: true
+  ignore_errors: true
