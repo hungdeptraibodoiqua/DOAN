@@ -34,3 +34,32 @@
     state: absent
     purge: true
   become: true
+
+#start ufw
+- name: start-ufw
+  ansible.builtin.systemd:
+    name: ufw.service
+    state: started
+  become: true
+
+#uninstall ufw
+- name: uninstall-ufw
+  ansible.builtin.apt:
+    name: ufw.service
+    state: absent
+    purge: true
+  become: true
+
+#unintall nftables
+- name: uninstall-nftables
+  ansible.builtin.apt:
+    name: nftables
+    state: absent
+    purge: true
+  become: true
+
+- name: uninstall-iptables-persistent
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: absent
+  become: true

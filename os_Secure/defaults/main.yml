@@ -10,10 +10,10 @@ auditd_path: /var/log/audit
 boot_loader_path: /boot/grub/grub.cfg
 
 sysctl_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sysctl.conf.j2
-sysctl_dest: /etc
+sysctl_dest: /etc/sysctl.conf
 
 apport_src: /home/ansible/Desktop/DOAN/os_Secure/templates/apport.j2
-apport_dest: /etc/default
+apport_dest: /etc/default/apport
 
 grub_src: /home/ansible/Desktop/DOAN/os_Secure/templates/grub.j2
 grb_dest: /etc/default
@@ -25,3 +25,22 @@ motd_path: /etc/motd
 
 XDMCP_custom_src: /home/ansible/Desktop/DOAN/os_Secure/templates/XDMCPcustom.conf.j2
 XDMCP_custom_dest: /etc/gdm3/custom.conf
+
+insecure_packages:       
+      - isc-dhcp-server #dhcp
+      - slapd   #ldap
+      - ldap-utils 
+      #- nfs-kernel-server  #If the system does not export NFS shares, it is recommended that the nfs-kernelserver package be removed to reduce the remote attack surface.
+      - bind9   #dns server 
+      - vsftpd  #ftp server 
+      - dovecot-imapd  #if you need to use imap, pop3, comment this setting 
+      - dovecot-pop3d
+      - samba
+      #- snmpd  #if no need to use SNMP, remove install
+      - nis  #Network Information Service (NIS)
+      - dnsmasq #Unless system is designated to act as a DNS caching, DNS forwarding and/or DHCP server, removed it
+      - rsync
+      - rsh-client 
+      - talk    #talk software use unencrypted protocols
+      - telnet
+      - rpcbind  #Remote Procedure Call; If RPC is not required,should removed

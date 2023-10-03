@@ -17,7 +17,7 @@
 
 ##remount /tmp, /var, /var/tmp, /var/log, /var/log/audit, /home
 - name: remount
-  ansible.builtin.command: 
+  ansible.builtin.raw: 
     mount -o remount /tmp #/var/tmp; /var/log; /var/log/audit; /home
   become: true
 
@@ -51,10 +51,10 @@
     purge: true
   become: true
 
-- name: task4 - config ASLR, ptrace_scope
+- name: task4 - config ASLR, ptrace_scope and some network config
   ansible.builtin.template:
     src: "{{ sysctl_src }}"
-    dest: "{{ sysctl_dest }}/sysctl.conf"
+    dest: "{{ sysctl_dest }}"
     mode: 0644
   become: true
 
@@ -62,7 +62,7 @@
 - name: task 5 - Ensure Automatic Error Reporting is not enabled
   ansible.builtin.template:
     src: "{{ apport_src }}"
-    dest: "{{ apport_dest }}/apport"
+    dest: "{{ apport_dest }}"
     mode: 0644
   become: true
 
@@ -113,10 +113,10 @@
 - name: set enforce mode
   ansible.builtin.raw: aa-enforce /etc/apparmor.d/*
   become: true
-
-- name: set complain mode
-  ansible.builtin.raw: aa-complain /etc/apparmor.d/*
-  become: true
+#or
+# - name: set complain mode
+#   ansible.builtin.raw: aa-complain /etc/apparmor.d/*
+#   become: true
 
 ##Command Line Warning Banners
 - name: task 7 - Ensure local login warning banner is configured properly
@@ -258,11 +258,65 @@
     purge: true
   become: true
 
-##Ensure DHCP Server is not installed
-- name: Ensure DHCP Server is not installed (don't run this task if need to use this service)
+##Ensure some insecure packages is not installed
+- name: task - Ensure DHCP Server is not installed (don't run this task if need to use this service)
   ansible.builtin.apt:
-    name: isc-dhcp-server
+    name: "{{ insecure_packages }}"
     state: absent
     purge: true
   become: true
+  tags: testing
   ignore_errors: true
+
+##network config (reboot may be required for this task)
+- name: task - disable bluetooth
+  ansible.builtin.systemd:
+    name: bluetooth.service
+    state: stopped
+    masked: true
+  become: true
+
+#if need to use this host firewall, run this task
+- name: task - install firewall (just use only ufw or nf table)
+  ansible.builtin.apt:
+    name: ufw
+    state: latest
+  become: true
+  notify: 
+    - start-ufw
+    - uninstall-iptables-persistent
+
+# - name: task - remove iptables-persistent (if use ufw, this feature may cause conflict)
+#   ansible.builtin.apt:
+#     name: iptables-persistent
+#     state: absent
+#   become: true
+
+# - name: task - install nftables (just use only ufw or nf table)
+#   ansible.builtin.apt:
+#     name: nftables
+#     state: latest
+#   become: true
+#   notify: uninstall-ufw
+
+# - name: task - Ensure iptables are flushed with nftables (if use nftables, run this task)
+#   ansible.builtin.command:
+#     iptables -F && ip6tables -F
+#   become: true
+
+##if use iptable instead of ufw and nftables
+# - name: install iptables
+#   ansible.builtin.apt:
+#     name:
+#       - iptables 
+#       - iptables-persistent
+#     state: latest
+#   become: true
+#   notify: 
+#     - uninstall-nftables
+#     - uninstall-ufw
+
+
+
+
+
