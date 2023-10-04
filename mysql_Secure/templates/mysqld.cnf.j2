@@ -79,7 +79,7 @@ max_binlog_size   = 100M
 
 #-----------------------------------------------------------------------------------------#
 ###for password complexity and life time###
-#download validate_password.so before run this setting
+#Note: download validate_password.so before run this setting
 
 plugin-load-add=validate_password.so
 validate-password=FORCE_PLUS_PERMANENT
@@ -158,7 +158,7 @@ secure_auth=ON
 
 #-----------------------------------------------------------------------------------------#
 ###SSL certificate
-#replace path of ssl cert 
+#replace path of ssl cert if needed
 
 ssl_ca=ca.pem
 ssl_cert=server-cert.pem

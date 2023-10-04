@@ -16,7 +16,7 @@ apport_src: /home/ansible/Desktop/DOAN/os_Secure/templates/apport.j2
 apport_dest: /etc/default/apport
 
 grub_src: /home/ansible/Desktop/DOAN/os_Secure/templates/grub.j2
-grb_dest: /etc/default
+grb_dest: /etc/default/grub
 
 issue_net_src: /home/ansible/Desktop/DOAN/os_Secure/templates/issue.net.j2
 issue_net_dest: /etc/issue.net
@@ -44,3 +44,6 @@ insecure_packages:
       - talk    #talk software use unencrypted protocols
       - telnet
       - rpcbind  #Remote Procedure Call; If RPC is not required,should removed
+
+
+      

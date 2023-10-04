@@ -35,21 +35,42 @@
     purge: true
   become: true
 
-#start ufw
+##handler for ufw
+#restart ufw
 - name: start-ufw
   ansible.builtin.systemd:
-    name: ufw.service
-    state: started
+    name: ufw
+    state: restarted
   become: true
+
+#stop ufw
+- name: stop-ufw-service
+  ansible.builtin.systemd:
+    name: ufw
+    state: stopped
+    enabled: false
+    masked: true
+  become: true
+  ignore_errors: true
 
 #uninstall ufw
 - name: uninstall-ufw
   ansible.builtin.apt:
-    name: ufw.service
+    name: ufw
     state: absent
     purge: true
   become: true
+#rule for loopback traffic
+# ufw allow in on lo
+# ufw allow out on lo
+# ufw deny in from 127.0.0.0/8
+# ufw deny in from ::1
+- name: config-ufw-loopback-traffic
+  ansible.builtin.shell:
+    "ufw allow in on lo && ufw allow out on lo && ufw deny in from 127.0.0.0/8 && ufw deny in from ::1"
+  become: true
 
+##handler for nftables
 #unintall nftables
 - name: uninstall-nftables
   ansible.builtin.apt:
@@ -58,8 +79,47 @@
     purge: true
   become: true
 
+- name: enalbe-nftables
+  ansible.builtin.systemd:
+    name: nftables
+    enabled: true
+  become: true
+
+- name: config-nftables-loopback-traffic
+  ansible.builtin.shell:
+     "nft add rule inet filter input iif lo accept && nft create rule inet filter input ip saddr 127.0.0.0/8 counter drop 
+     && nft add rule inet filter input ip6 saddr ::1 counter drop"
+  become: true
+
+#load rule for nftables in /etc/nftables.rules??
+#uninstall uninstall-iptables-persistent
 - name: uninstall-iptables-persistent
   ansible.builtin.apt:
     name: iptables-persistent
     state: absent
+  become: true
+
+##handler for iptables
+#Ensure iptables are flushed with nftables (if use nftables, run this task)
+#iptables -A INPUT -i lo -j ACCEPT
+#iptables -A OUTPUT -o lo -j ACCEPT
+#iptables -A INPUT -s 127.0.0.0/8 -j DROP
+- name: config-iptables-loopback-traffic
+  ansible.builtin.shell:
+    "iptables -A INPUT -i lo -j ACCEPT && iptables -A OUTPUT -o lo -j ACCEPT && iptables -A INPUT -s 127.0.0.0/8 -j DROP"
+  become: true
+
+- name: flushed-iptables
+  ansible.builtin.shell:
+    iptables -F && ip6tables -F
+  become: true
+
+#config ip6tables loopback traffic
+# ip6tables -A INPUT -i lo -j ACCEPT
+# ip6tables -A OUTPUT -o lo -j ACCEPT
+# ip6tables -A INPUT -s ::1 -j DROP
+#run this handlers if use ipv6
+- name: config-ipv6-loopback-traffic
+  ansible.builtin.shell:
+    "ip6tables -A INPUT -i lo -j ACCEPT && ip6tables -A OUTPUT -o lo -j ACCEPT && ip6tables -A INPUT -s ::1 -j DROP"
   become: true

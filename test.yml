@@ -25,6 +25,24 @@
     neutron_path: /etc/neutron
 
     site_default_path: /etc/apache2/sites-enabled
+    insecure_packages:       
+      - isc-dhcp-server #dhcp
+      - slapd   #ldap
+      - ldap-utils 
+      #- nfs-kernel-server  #If the system does not export NFS shares, it is recommended that the nfs-kernelserver package be removed to reduce the remote attack surface.
+      - bind9   #dns server 
+      - vsftpd  #ftp server 
+      - dovecot-imapd  #if you need to use imap, pop3, comment this setting 
+      - dovecot-pop3d
+      - samba
+      #- snmpd  #if no need to use SNMP, remove install
+      - nis  #Network Information Service (NIS)
+      - dnsmasq #Unless system is designated to act as a DNS caching, DNS forwarding and/or DHCP server, removed it
+      - rsync
+      - rsh-client 
+      - talk    #talk software use unencrypted protocols
+      - telnet
+      - rpcbind  #Remote Procedure Call; If RPC is not required,should removed
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
@@ -34,3 +52,12 @@
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
 
+    - name: config-iptables-loopback-traffic
+      ansible.builtin.shell:
+        ss -4tuln
+      # become: true
+      register: output
+
+    - name: show output
+      ansible.builtin.debug:
+        var: output.stdout_lines

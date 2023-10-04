@@ -1,6 +1,6 @@
 ---    
 ###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
-- name: task 1 - Separate partition (/tmp, /var, /var/tmp... using fstab)
+- name: Separate partition (/tmp, /var, /var/tmp... using fstab)
   ansible.builtin.template:
     src: "{{ new_fstab_path }}"
     dest: "{{ origin_fstab_path }}/fstab"
@@ -34,7 +34,7 @@
 ##reconf permission bootloader config
 # chown root:root /boot/grub/grub.cfg
 # chmod u-x,go-rwx /boot/grub/grub.cfg: 600
-- name: task 2 - reconfig permission of grub.cfg
+- name: reconfig permission of grub.cfg
   ansible.builtin.file:
     path: "{{ boot_loader_path }}"
     owner: root
@@ -43,7 +43,7 @@
   become: true
 
 ##process hardening
-- name: task 3 - Ensure prelink is not installed
+- name: Ensure prelink is not installed
   ansible.builtin.apt:
     name:
       - prelink
@@ -51,7 +51,7 @@
     purge: true
   become: true
 
-- name: task4 - config ASLR, ptrace_scope and some network config
+- name: config ASLR, ptrace_scope and some network config
   ansible.builtin.template:
     src: "{{ sysctl_src }}"
     dest: "{{ sysctl_dest }}"
@@ -59,7 +59,7 @@
   become: true
 
 ##disable apport.service (enabled=0)
-- name: task 5 - Ensure Automatic Error Reporting is not enabled
+- name: Ensure Automatic Error Reporting is not enabled
   ansible.builtin.template:
     src: "{{ apport_src }}"
     dest: "{{ apport_dest }}"
@@ -87,7 +87,7 @@
 
 ##Mandatory access control
 ##AppArmor provides a Mandatory Access Control (MAC)
-- name: task 6 - install AppArmor
+- name: install AppArmor
   ansible.builtin.apt:
     name:
       - apparmor
@@ -99,7 +99,7 @@
 - name: config AppArmor
   ansible.builtin.template:
     src: "{{ grub_src }}"
-    dest: "{{ grb_dest }}/grub"
+    dest: "{{ grb_dest }}"
     mode: 0644
   become: true
   notify: update-grub
@@ -119,7 +119,7 @@
 #   become: true
 
 ##Command Line Warning Banners
-- name: task 7 - Ensure local login warning banner is configured properly
+- name: Ensure local login warning banner is configured properly
   ansible.builtin.template:
     src: "{{ issue_net_src }}"
     dest: "{{ issue_net_dest }}"
@@ -154,7 +154,7 @@
 #   when: motd_file_info.stat.exists == true
 
 ##solution 2
-- name: task 8 - Ensure permissions on /etc/motd are configured
+- name: Ensure permissions on /etc/motd are configured
   ansible.builtin.file:
     path: "{{ motd_path }}"
     state: absent
@@ -168,7 +168,7 @@
 #     purge: true
 #   become: true
 
-- name: task 9 - Ensure XDCMP is not enabled
+- name: Ensure XDCMP is not enabled
   ansible.builtin.template:
     src: "{{ XDMCP_custom_src }}"
     dest: "{{ XDMCP_custom_dest }}"
@@ -191,7 +191,7 @@
 #   ignore_errors: true  #some service will return error if not exists when uninstall
 
 #case 2: use systemd-timesyncd.service
-- name: task 10 - use systemd-timesyncd.service
+- name: use systemd-timesyncd.service
   ansible.builtin.systemd:
     name: systemd-timesyncd.service
     state: started
@@ -242,7 +242,7 @@
   become: true
   ignore_errors: true
 
-- name: task - Ensure Avahi Server is not installed 
+- name: Ensure Avahi Server is not installed 
   ansible.builtin.apt:
     name: avahi-daemon
     state: absent
@@ -251,7 +251,7 @@
   ignore_errors: true
 
 ##Ensure Common Unix Print System (CUPS) is not installed
-- name: task - Ensure Common Unix Print System (CUPS) is not installed (don't run this task if need to use this service)
+- name: Ensure Common Unix Print System (CUPS) is not installed (don't run this task if need to use this service)
   ansible.builtin.apt:
     name: cups 
     state: absent
@@ -259,7 +259,7 @@
   become: true
 
 ##Ensure some insecure packages is not installed
-- name: task - Ensure DHCP Server is not installed (don't run this task if need to use this service)
+- name: uninstall some unsecure packages 
   ansible.builtin.apt:
     name: "{{ insecure_packages }}"
     state: absent
@@ -269,7 +269,7 @@
   ignore_errors: true
 
 ##network config (reboot may be required for this task)
-- name: task - disable bluetooth
+- name: disable bluetooth
   ansible.builtin.systemd:
     name: bluetooth.service
     state: stopped
@@ -277,35 +277,32 @@
   become: true
 
 #if need to use this host firewall, run this task
-- name: task - install firewall (just use only ufw or nf table)
+- name: install ufw firewall (just use only ufw or nftable)
   ansible.builtin.apt:
     name: ufw
     state: latest
   become: true
   notify: 
     - start-ufw
+    - config-ufw-loopback-traffic
     - uninstall-iptables-persistent
+    - uninstall-nftables
 
-# - name: task - remove iptables-persistent (if use ufw, this feature may cause conflict)
-#   ansible.builtin.apt:
-#     name: iptables-persistent
-#     state: absent
-#   become: true
-
-# - name: task - install nftables (just use only ufw or nf table)
+# - name: install nftables (just use only ufw or nftable)
 #   ansible.builtin.apt:
 #     name: nftables
 #     state: latest
 #   become: true
-#   notify: uninstall-ufw
+#   notify:
+#     - enalbe-nftables
+#     - config-nftables-loopback-traffic 
+#     - uninstall-ufw
+#     - flushed-iptables
+#   ignore_errors: true
+##Ensure nftables rules are permanent?
 
-# - name: task - Ensure iptables are flushed with nftables (if use nftables, run this task)
-#   ansible.builtin.command:
-#     iptables -F && ip6tables -F
-#   become: true
-
-##if use iptable instead of ufw and nftables
-# - name: install iptables
+##config iptables
+# - name: install iptables (just use only ufw or nftable)
 #   ansible.builtin.apt:
 #     name:
 #       - iptables 
@@ -313,10 +310,22 @@
 #     state: latest
 #   become: true
 #   notify: 
+#     - config-iptables-loopback-traffic
+#     - config-ipv6-loopback-traffic
 #     - uninstall-nftables
-#     - uninstall-ufw
+#     - stop-ufw-service
+#   ignore_errors: true
 
+##Access, Authentication and Authorization
+##cron config
+- name: enabled cron.service
+  ansible.builtin.systemd:
+    name: cron.service
+    state: started
+    enabled: true
+    masked: false
+  become: true
 
-
+- name: set appropriate permission
 
 
