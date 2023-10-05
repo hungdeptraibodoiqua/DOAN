@@ -123,3 +123,10 @@
   ansible.builtin.shell:
     "ip6tables -A INPUT -i lo -j ACCEPT && ip6tables -A OUTPUT -o lo -j ACCEPT && ip6tables -A INPUT -s ::1 -j DROP"
   become: true
+
+##restart ssh
+- name: restart-ssh
+  ansible.builtin.systemd:
+    name: ssh
+    state: restarted
+  become: true

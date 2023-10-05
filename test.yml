@@ -23,26 +23,10 @@
     cinder_path: /etc/cinder
     manila_path: /etc/manila
     neutron_path: /etc/neutron
-
+    cron_tab_path: /etc
+    cron_files_name: [cron.daily, cron.hourly, cron.monthly, cron.weekly, crontab]
     site_default_path: /etc/apache2/sites-enabled
-    insecure_packages:       
-      - isc-dhcp-server #dhcp
-      - slapd   #ldap
-      - ldap-utils 
-      #- nfs-kernel-server  #If the system does not export NFS shares, it is recommended that the nfs-kernelserver package be removed to reduce the remote attack surface.
-      - bind9   #dns server 
-      - vsftpd  #ftp server 
-      - dovecot-imapd  #if you need to use imap, pop3, comment this setting 
-      - dovecot-pop3d
-      - samba
-      #- snmpd  #if no need to use SNMP, remove install
-      - nis  #Network Information Service (NIS)
-      - dnsmasq #Unless system is designated to act as a DNS caching, DNS forwarding and/or DHCP server, removed it
-      - rsync
-      - rsh-client 
-      - talk    #talk software use unencrypted protocols
-      - telnet
-      - rpcbind  #Remote Procedure Call; If RPC is not required,should removed
+    ssh_config_file_path: /etc/ssh/
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
@@ -51,13 +35,22 @@
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
+ 
+    - name: Check if pam_pwquality.so exists
+      stat:
+        path: /lib/*/security/pam_pwquality.so  # Update the path if needed
+      register: pwquality_file
 
-    - name: config-iptables-loopback-traffic
-      ansible.builtin.shell:
-        ss -4tuln
-      # become: true
-      register: output
+    - name: Install pam_pwquality package if not present
+      ansible.builtin.apt:  # Use 'ansible.builtin.apt' if you are using a Debian-based system
+        name: libpam-pwquality
+        state: present
+      when: pwquality_file.stat.exists == false
 
-    - name: show output
-      ansible.builtin.debug:
-        var: output.stdout_lines
+    - name: Print a message if pam_pwquality.so was installed
+      debug:
+        msg: "pam_pwquality.so has been installed."
+      when: pwquality_file.stat.exists == false
+
+
+

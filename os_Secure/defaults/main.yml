@@ -45,5 +45,14 @@ insecure_packages:
       - telnet
       - rpcbind  #Remote Procedure Call; If RPC is not required,should removed
 
+cron_tab_path: /etc
+cron_files_name: [cron.d, cron.daily, cron.hourly, cron.monthly, cron.weekly, crontab]
 
+ssh_config_file_path: /etc/ssh
+
+sshd_src: /home/hung/Desktop/DOAN/os_Secure/templates/sshd_config.j2
+sshd_dest: /etc/ssh/sshd_config
+
+sudoers_src: /home/hung/Desktop/DOAN/os_Secure/templates/sudoers.j2
+sudoers_dest: /etc/sudoers
       

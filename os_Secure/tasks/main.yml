@@ -327,5 +327,64 @@
   become: true
 
 - name: set appropriate permission
+  ansible.builtin.file:
+    path: "{{ cron_tab_path }}/{{ item }}"
+    mode: og-rwx
+  loop: "{{ cron_files_name }}"
+  become: true
+
+##config ssh 
+- name: Ensure permissions on /etc/ssh/sshd_config are configured
+  ansible.builtin.file:
+    path: "{{ ssh_config_file_path }}"
+    owner: root
+    group: root
+    state: directory
+    recurse: true
+    mode: 0600
+  become: true
+
+##Ensure SSH access is limited ??
+
+- name: config sshd_config 
+  ansible.builtin.template:
+    src: "{{ sshd_src }}"
+    dest: "{{ sshd_dest }}"
+    owner: root
+    group: root
+    mode: 0600
+  become: true
+  handlers: restart-ssh
+
+##privilege escalation
+- name: config sudoers
+  ansible.builtin.template:
+    src: "{{ sudoers_src }}"
+    dest: "{{ sudoers_dest }}"
+    owner: root
+    group: root
+    mode: 0440
+  become: true
+
+#config PAM 
+- name: Check if pam_pwquality.so exists
+  ansible.builtin.stat:
+    path: /lib/*/security/pam_pwquality.so  # Update the path if needed
+  register: pwquality_file
+
+- name: Install pam_pwquality package if not present
+  ansible.builtin.apt:  # Use 'ansible.builtin.apt' if you are using a Debian-based system
+    name: libpam-pwquality
+    state: present
+  when: pwquality_file.stat.exists == false
+
+- name: Print a message if pam_pwquality.so was installed
+  debug:
+    msg: "pam_pwquality.so has been installed."
+  when: pwquality_file.stat.exists == false
+
+  
+
+
 
 
