@@ -35,22 +35,21 @@
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
- 
-    - name: Check if pam_pwquality.so exists
-      stat:
-        path: /lib/*/security/pam_pwquality.so  # Update the path if needed
-      register: pwquality_file
+    - name: Find users with UID 0 other than root
+      ansible.builtin.shell: 
+        "getent passwd | awk -F':' '$3 == 0 && $1 != \"root\" { print $1 }'"
+      register: users_to_remove
+      changed_when: false
+      check_mode: no 
+    
+    - name: Remove users with UID 0 other than root
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: absent
+      with_items: "{{ users_to_remove.stdout_lines }}"
+      when: users_to_remove.stdout_lines | length > 0
+      become: true
 
-    - name: Install pam_pwquality package if not present
-      ansible.builtin.apt:  # Use 'ansible.builtin.apt' if you are using a Debian-based system
-        name: libpam-pwquality
-        state: present
-      when: pwquality_file.stat.exists == false
-
-    - name: Print a message if pam_pwquality.so was installed
-      debug:
-        msg: "pam_pwquality.so has been installed."
-      when: pwquality_file.stat.exists == false
 
 
 

@@ -130,3 +130,63 @@
     name: ssh
     state: restarted
   become: true
+
+- name: include-common-password
+  ansible.builtin.template:
+    src: "{{ common_password_src }}"
+    dest: "{{ common_password_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+##inactive password lockout
+- name: inactive-passwd-lock
+  ansible.builtin.shell: useradd -D -f 30
+  become: true
+
+- name: config-common-session
+  ansible.builtin.template:
+    src: "{{ common_session_src }}"
+    dest: "{{ common_session_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: restart-systemd-journal-upload
+  ansible.builtin.systemd:
+    name: systemd-journal-upload
+    state: restarted
+    enabled: true
+  become: true
+
+- name: not-receive-remote-log
+  ansible.builtin.systemd:
+    name: systemd-journal-remote.socket
+    enabled: false
+  become: true
+
+##systemctl restart systemd-journald
+- name: restart-systemd-journald
+  ansible.builtin.systemd:
+    name: systemd-journald
+    state: restarted
+  become: true
+
+##handler for rsyslog
+- name: enabled-rsyslog
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: restarted
+    enabled: true
+  become: true
+
+##handler for auditd 
+- name: enabled-auditd
+  ansible.builtin.systemd:
+    name: auditd
+    state: restarted
+    enabled: true
+  become: true
+    

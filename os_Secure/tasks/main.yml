@@ -369,7 +369,7 @@
 #config PAM 
 - name: Check if pam_pwquality.so exists
   ansible.builtin.stat:
-    path: /lib/*/security/pam_pwquality.so  # Update the path if needed
+    path: "{{ libpam_modules_path }}/pam_pwquality.so"  # Update the path if needed
   register: pwquality_file
 
 - name: Install pam_pwquality package if not present
@@ -382,6 +382,236 @@
   debug:
     msg: "pam_pwquality.so has been installed."
   when: pwquality_file.stat.exists == false
+
+- name: config pam_pwquality
+  ansible.builtin.template:
+    src: "{{ pwquality_src }}"
+    dest: "{{ pwquality_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: include-common-password
+
+- name: Ensure lockout for failed password attempts is configured
+  ansible.builtin.template:
+    src: "{{ common_auth_src }}"
+    dest: "{{ common_auth_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: 
+  notify: inactive-passwd-lock
+
+- name: Ensure default group for the root account is GID 0
+  ansible.builtin.shell: usermod -g 0 root
+  become: true
+
+- name: config login.def
+  ansible.builtin.template:
+    src: "{{ login_def_src }}"
+    dest: "{{ login_def_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: config-common-session
+
+- name: /etc/shells without nologin
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    regexp: '.*nologin.*'
+    state: absent
+  become: true
+
+##audit and logging
+##Ensure systemd-journal-remote is installed
+##un-comment to use this task
+- name: install systemd-journal-remote
+  ansible.builtin.apt:
+    name: systemd-journal-remote
+    state: latest
+  become: true
+
+- name: config systemd-journal-remote
+  ansible.builtin.template:
+    src: "{{ journal_upload_src }}"
+    dest: "{{ journal_upload_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: 
+    - start-systemd-journal-upload
+    - not-receive-remote-log
+
+- name: config journald.conf 
+  ansible.builtin.template:
+    src: "{{ journald_conf_src }}"
+    dest: "{{ journald_conf_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart-systemd-journald
+
+##nsure rsyslog is configured
+##un-comment to use this task
+# - name: install rsyslog
+#   ansible.builtin.apt:
+#     name: rsyslog
+#     state: latest
+#   become: true
+#   notify: enabled-rsyslog
+
+# - name: config rsyslog
+#   ansible.builtin.template:
+#     src: "{{ rsyslog_src }}"
+#     dest: "{{ rsyslog_dest }}"
+#     owner: root
+#     group: root
+#     mode: 0644
+#   become: true
+#   notify: enabled-
+
+##Configure System Accounting (auditd)
+- name: install auditd 
+  ansible.builtin.apt:
+    name: auditd
+    state: latest
+  become: true
+  notify: enabled-auditd
+
+- name: config auditd.conf 
+  ansible.builtin.template:
+    src: "{{ auditd_src }}"
+    dest: "{{ auditd_dest }}"
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+##system file permissions
+##/etc/passwd
+- name: config /etc/passwd 
+  ansible.builtin.file:
+    path: /etc/passwd
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: config /etc/passwd 
+  ansible.builtin.file:
+    path: /etc/passwd-
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+##/etc group
+- name: config /etc/group 
+  ansible.builtin.file:
+    path: /etc/group
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: config /etc/group- 
+  ansible.builtin.file:
+    path: /etc/group-
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+##/etc/shadow 
+- name: config /etc/shadow 
+  ansible.builtin.file:
+    path: /etc/shadow
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+- name: config /etc/shadow- 
+  ansible.builtin.file:
+    path: /etc/shadow-
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+##/etc/gshadow
+- name: config /etc/gshadow
+  ansible.builtin.file:
+    path: /etc/gshadow
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+- name: config /etc/gshadow-
+  ansible.builtin.file:
+    path: /etc/gshadow-
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+##/etc/shells
+- name: config /etc/shells
+  ansible.builtin.file:
+    path: /etc/shells
+    owner: root
+    group: root
+    mode: 0640
+  become: true
+
+##/etc/security/opasswd.old
+# - name: config /etc/security/opasswd.old
+#   ansible.builtin.file:
+#     path: /etc/security/opasswd.old
+#     owner: root
+#     group: root
+#     mode: 0600
+#   become: true
+
+##Ensure root is the only UID 0 account
+- name: Find users with UID 0 other than root
+  ansible.builtin.shell: 
+    "getent passwd | awk -F':' '$3 == 0 && $1 != \"root\" { print $1 }'"
+  register: users_to_remove
+  changed_when: false
+  check_mode: no 
+
+- name: Remove users with UID 0 other than root
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ users_to_remove.stdout_lines }}"
+  when: users_to_remove.stdout_lines | length > 0
+  become: true
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+    
+
+
+
 
   
 

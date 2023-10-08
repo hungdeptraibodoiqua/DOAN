@@ -55,4 +55,32 @@ sshd_dest: /etc/ssh/sshd_config
 
 sudoers_src: /home/hung/Desktop/DOAN/os_Secure/templates/sudoers.j2
 sudoers_dest: /etc/sudoers
-      
+
+libpam_modules_path: /lib/x86_64-linux-gnu/security
+
+pwquality_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/pwquality.conf.j2
+pwquality_dest: /etc/security/pwquality.conf
+
+common_password_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-password.j2
+common_password_dest: /etc/pam.d/common-password
+
+common_auth_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-auth.j2
+common_auth_dest: /etc/pam.d/common-auth      
+
+login_def_src: /home/ansible/Desktop/DOAN/os_Secure/templates/Environment_user_account/login.defs.j2
+login_def_dest: /etc/login.defs
+
+common_session_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-session.j2
+common_session_dest: /etc/pam.d/common-
+
+journal_upload_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/journal-upload.conf.j2
+journal_upload_dest: /etc/systemd/journal-upload.conf 
+
+journald_conf_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/journald.conf.j2
+journald_conf_dest: /etc/systemd/journald.conf
+
+rsyslog_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/rsyslog.conf.j2
+rsyslog_dest: /etc/rsyslog.
+
+auditd_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/auditd.conf.j2
+auditd_dest: /etc/audit/auditd.conf
