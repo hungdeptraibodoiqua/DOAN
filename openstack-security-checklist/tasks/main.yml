@@ -4,14 +4,14 @@
 - name: Check if the group exists
   ansible.builtin.command: getent group stack
   register: group_check
-  ignore_errors: yes  # Ignore errors since the group might not exist
+  ignore_errors: true  # Ignore errors since the group might not exist
    
 - name: Create the group if it doesn't exist
   ansible.builtin.group:
     name: "{{ openstack_file_group }}"
     state: present
   when: group_check.rc != 0
-  become: yes
+  become: true
 
 - name: Display the result
   ansible.builtin.debug:
@@ -37,9 +37,9 @@
   when: keystone_path.stat.exists
 
 - name: result
- ansible.builtin.debug:
-   msg: "keystone path doesn't exists"
- when: not keystone_path.stat.exists
+  ansible.builtin.debug:
+    msg: "keystone path doesn't exists"
+  when: not keystone_path.stat.exists
    
 - name: set permission for keystone directory
   ansible.builtin.file:
@@ -47,8 +47,8 @@
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: keystone_path.stat.exists
 
 ##check horizon path and permission if exists /etc/openstack-dashboard/local_settings.py
@@ -63,9 +63,9 @@
   when: horizon_path.stat.exists
 
 - name: result
- ansible.builtin.debug:
-   msg: "horizon path doesn't exists"
- when: not horizon_path.stat.exists
+  ansible.builtin.debug:
+    msg: "horizon path doesn't exists"
+  when: not horizon_path.stat.exists
 
 - name: set permission for horizon directory
   ansible.builtin.file:
@@ -73,8 +73,8 @@
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: horizon_path.stat.exists
 
 ##nova compute service
@@ -87,18 +87,20 @@
   ansible.builtin.debug:
     msg: "nova path exists"
   when: nova_path.stat.exists
+
 - name: result
- ansible.builtin.debug:
-   msg: "nova path doesn't exists"
- when: not nova_path.stat.exists
+  ansible.builtin.debug:
+    msg: "nova path doesn't exists"
+  when: not nova_path.stat.exists
+
 - name: set permission for nova directory
   ansible.builtin.file:
     path: "{{ nova_path }}"
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: nova_path.stat.exists
 
 ##block storage cinder
@@ -110,19 +112,21 @@
 - name: result
   ansible.builtin.debug:
     msg: "cinder path exists"
-  when: nova_path.stat.exists
+  when: nova_path.stat.
+  
 - name: result
- ansible.builtin.debug:
-   msg: "cinder path doesn't exists"
- when: not nova_path.stat.exists
+  ansible.builtin.debug:
+    msg: "cinder path doesn't exists"
+  when: not nova_path.stat.exists
+
 - name: set permission for nova directory
   ansible.builtin.file:
     path: "{{ cinder_path }}"
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: cinder_path.stat.exists
 
 ##sharefile service manila
@@ -135,18 +139,20 @@
   ansible.builtin.debug:
     msg: "manila path exists"
   when: manila_path.stat.exists
+
 - name: result
- ansible.builtin.debug:
-   msg: "manila path doesn't exists"
- when: not manila_path.stat.exists
+  ansible.builtin.debug:
+    msg: "manila path doesn't exists"
+  when: not manila_path.stat.exists
+
 - name: set permission for nova directory
   ansible.builtin.file:
     path: "{{ manila_path }}"
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: manila_path.stat.exists
   
 ##network service neutron 
@@ -159,16 +165,18 @@
   ansible.builtin.debug:
     msg: "neutron path exists"
   when: neutron_path.stat.exists
+
 - name: result
- ansible.builtin.debug:
-   msg: "neutron path doesn't exists"
- when: not neutron_path.stat.exists
+  ansible.builtin.debug:
+    msg: "neutron path doesn't exists"
+  when: not neutron_path.stat.exists
+
 - name: set permission for neutron directory
   ansible.builtin.file:
     path: "{{ neutron_path }}"
     owner: "{{ openstack_file_owner }}"
     group: "{{ openstack_file_group }}"
     mode: 0640
-    recurse: yes
-  become: yes
+    recurse: true
+  become: true
   when: neutron_path.stat.exists
