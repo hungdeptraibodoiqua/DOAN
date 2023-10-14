@@ -1,7 +1,55 @@
 ---
 # tasks file for ApacheHTTP_secure
-- name: enable https for default site (testing)
+- name: apt update
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+
+- name: search for apache2 module
+  ansible.builtin.command:
+    apt search libapache2-mod
+  become: true
+  register: output 
+
+- name: output 
+  ansible.builtin.debug:
+    var: output.stdout_lines
+
+#if want install multiple module, un-comment this task 
+# - name: install module 
+#   ansible.builtin.command:
+#     apt install libapache2-mod-"{{ item }}"
+#   loop: "{{ install_module }}"
+#   become: true
+
+- name: config apache2.conf
   ansible.builtin.template:
-    src: "/home/hung/Desktop/DOAN/ApacheHTTP_secure/templates/000-default.conf.j2"
-    dest: "{{ site_default_path/000-default.conf }}"
-  become: yes
+    src: "{{ apache2_src }}"
+    dest: "{{ apache2_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify: restart-apache2
+
+#disable module 
+- name: disable insecure modules
+  ansible.builtin.command: a2dismod "{{ item }}"
+  loop: "{{ disable_modules }}"
+  become: true
+  register: output
+
+- name: output 
+  ansible.builtin.debug:
+    var: output.stdout
+
+#enable module 
+# - name: enable_modules
+#   ansible.builtin.command: a2dismod "{{ item }}"
+#   loop: "{{ enable_modules }}"
+#   become: true
+#   register: output
+
+# - name: output 
+#   ansible.builtin.debug:
+#     var: output.stdout

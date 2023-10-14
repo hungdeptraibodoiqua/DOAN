@@ -593,28 +593,3 @@
   with_items: "{{ users_to_remove.stdout_lines }}"
   when: users_to_remove.stdout_lines | length > 0
   become: true
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-    
-
-
-
-
-  
-
-
-
-

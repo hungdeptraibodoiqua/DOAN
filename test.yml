@@ -3,20 +3,8 @@
   hosts: localhost
   # become: yes
   vars:
-    mysql_datadir: /var/lib/mysql
-    mysql_slow_query_log_file: /var/log/mysql-slow.log
-    mysql_owner: mysql
-    mysql_group: mysql
-    log_bin_basename: /var/lib/mysql/
-    error_log_dir_file: /var/log/mysql/error.log
-    relay_log_dir_file: /var/lib/mysql/ubuntu-relay-bin
-    general_log_file: /var/lib/mysql/ubuntu.log
-    plugin_dir: /usr/lib/mysql/plugin/
-    secure_file_priv: /var/lib/mysql-files/
-    
-    openstack_file_owner: hung  ##change if needed
-    openstack_file_group: hung 
 
+  
     keystone_path: /etc/keystone
     horizon_path: /etc/openstack-dashboard/local_settings.py
     nova_path: /etc/nova
@@ -27,6 +15,7 @@
     cron_files_name: [cron.daily, cron.hourly, cron.monthly, cron.weekly, crontab]
     site_default_path: /etc/apache2/sites-enabled
     ssh_config_file_path: /etc/ssh/
+    disable_modules: [status, proxy]
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
@@ -35,21 +24,6 @@
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
-    - name: Find users with UID 0 other than root
-      ansible.builtin.shell: 
-        "getent passwd | awk -F':' '$3 == 0 && $1 != \"root\" { print $1 }'"
-      register: users_to_remove
-      changed_when: false
-      check_mode: no 
-    
-    - name: Remove users with UID 0 other than root
-      ansible.builtin.user:
-        name: "{{ item }}"
-        state: absent
-      with_items: "{{ users_to_remove.stdout_lines }}"
-      when: users_to_remove.stdout_lines | length > 0
-      become: true
-
-
+  
 
 
