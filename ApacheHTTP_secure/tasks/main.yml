@@ -22,16 +22,6 @@
 #   loop: "{{ install_module }}"
 #   become: true
 
-- name: config apache2.conf
-  ansible.builtin.template:
-    src: "{{ apache2_src }}"
-    dest: "{{ apache2_dest }}"
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-  notify: restart-apache2
-
 #disable module 
 - name: disable insecure modules
   ansible.builtin.command: a2dismod "{{ item }}"
@@ -53,3 +43,58 @@
 # - name: output 
 #   ansible.builtin.debug:
 #     var: output.stdout
+
+- name: create apache group 
+  ansible.builtin.group:
+    name: apache
+    state: present
+    system: true
+  become: true
+
+- name: create apache user
+  ansible.builtin.user:
+    name: apache
+    state: present
+    system: true
+    group: apache
+    home: /var/www
+    shell: /sbin/nologin
+  become: true
+
+- name: config apache directory permission
+  ansible.builtin.file:
+    path: /etc/apache2
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: 0750
+  become: true
+
+- name: config pid file 
+  ansible.builtin.file:
+    path: "{{ apache_pid_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+#config apache2.conf 
+- name: config apache2.conf
+  ansible.builtin.template:
+    src: "{{ apache2_src }}"
+    dest: "{{ apache2_dest }}"
+    owner: root
+    group: apache 
+    mode: 0644
+  become: true
+  notify: restart-apache2
+
+##apache access control
+- name: remove default page
+  ansible.builtin.file:
+    path: "{{ DocumentRoot }}/index.html"
+    state: absent
+  become: true
+
+- name: 

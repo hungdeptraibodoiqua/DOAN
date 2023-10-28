@@ -9,7 +9,11 @@ apache2_dest: /etc/apache2/apache2.conf
 
 #add module name to []
 #auth_basic, auth_digest,autoindex need manually disable because it need to confirm 
-disable_modules: [status, proxy, userdir, info, ]
+disable_modules: [status, proxy, userdir, info, dav, ]
 
 #add module name to []
 enable_modules: []
+
+apache_log_file: /var/log/apache2
+apache_pid_file: /var/run/apache2/apache2.pid
+DocumentRoot: /var/www/html

@@ -16,6 +16,7 @@
     site_default_path: /etc/apache2/sites-enabled
     ssh_config_file_path: /etc/ssh/
     disable_modules: [status, proxy]
+    DocumentRoot: /var/www/html
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
@@ -24,6 +25,9 @@
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
-  
-
+    - name: remove
+      ansible.builtin.file:
+        path: "{{ DocumentRoot }}/index.html"
+        state: absent
+      become: true
 
