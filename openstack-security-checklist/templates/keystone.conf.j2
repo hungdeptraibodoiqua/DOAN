@@ -49,3 +49,17 @@ lockout_failure_attempts = 2
 
 [oslo_middleware]
 max_request_body_size = 114688
+
+
+[security_compliance]
+password_regex = ^(?=.*\d)(?=.*[a-zA-Z]).{7,}$
+password_regex_description = Passwords must contain at least 1 letter, 1
+                             digit, and be a minimum length of 7
+                             characters.
+                             
+lockout_failure_attempts = 6
+lockout_duration = 1800
+disable_user_account_days_inactive = 90
+password_expires_days = 
+unique_last_password_count= 5
+minimum_password_age = 1

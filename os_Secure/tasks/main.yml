@@ -259,11 +259,12 @@
   become: true
 
 ##Ensure some insecure packages is not installed
-- name: uninstall some unsecure packages 
+- name: uninstall un-used and insecure packages  
   ansible.builtin.apt:
-    name: "{{ insecure_packages }}"
+    name: "{{ item }}"
     state: absent
     purge: true
+  loop: "{{ insecure_packages }}"
   become: true
   tags: testing
   ignore_errors: true
@@ -329,7 +330,7 @@
 - name: set appropriate permission
   ansible.builtin.file:
     path: "{{ cron_tab_path }}/{{ item }}"
-    mode: og-rwx
+    mode: 700
   loop: "{{ cron_files_name }}"
   become: true
 
@@ -400,7 +401,7 @@
     owner: root
     group: root
     mode: 0644
-  become: 
+  become: true
   notify: inactive-passwd-lock
 
 - name: Ensure default group for the root account is GID 0
@@ -492,91 +493,15 @@
   become: true
 
 ##system file permissions
-##/etc/passwd
-- name: config /etc/passwd 
+- name: credential file permissions
   ansible.builtin.file:
-    path: /etc/passwd
+    path: "/etc/{{ item }}"
     owner: root
     group: root
     mode: 0644
+  loop: "{{ critical_file }}"
   become: true
-
-- name: config /etc/passwd 
-  ansible.builtin.file:
-    path: /etc/passwd-
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-
-##/etc group
-- name: config /etc/group 
-  ansible.builtin.file:
-    path: /etc/group
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-
-- name: config /etc/group- 
-  ansible.builtin.file:
-    path: /etc/group-
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-
-##/etc/shadow 
-- name: config /etc/shadow 
-  ansible.builtin.file:
-    path: /etc/shadow
-    owner: root
-    group: root
-    mode: 0640
-  become: true
-
-- name: config /etc/shadow- 
-  ansible.builtin.file:
-    path: /etc/shadow-
-    owner: root
-    group: root
-    mode: 0640
-  become: true
-
-##/etc/gshadow
-- name: config /etc/gshadow
-  ansible.builtin.file:
-    path: /etc/gshadow
-    owner: root
-    group: root
-    mode: 0640
-  become: true
-
-- name: config /etc/gshadow-
-  ansible.builtin.file:
-    path: /etc/gshadow-
-    owner: root
-    group: root
-    mode: 0640
-  become: true
-
-##/etc/shells
-- name: config /etc/shells
-  ansible.builtin.file:
-    path: /etc/shells
-    owner: root
-    group: root
-    mode: 0640
-  become: true
-
-##/etc/security/opasswd.old
-# - name: config /etc/security/opasswd.old
-#   ansible.builtin.file:
-#     path: /etc/security/opasswd.old
-#     owner: root
-#     group: root
-#     mode: 0600
-#   become: true
+  ignore_errors: true
 
 ##Ensure root is the only UID 0 account
 - name: Find users with UID 0 other than root

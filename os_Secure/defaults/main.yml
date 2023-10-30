@@ -26,25 +26,8 @@ motd_path: /etc/motd
 XDMCP_custom_src: /home/ansible/Desktop/DOAN/os_Secure/templates/XDMCPcustom.conf.j2
 XDMCP_custom_dest: /etc/gdm3/custom.conf
 
-insecure_packages:       
-      - isc-dhcp-server #dhcp
-      - slapd   #ldap
-      - ldap-utils 
-      #- nfs-kernel-server  #If the system does not export NFS shares, it is recommended that the nfs-kernelserver package be removed to reduce the remote attack surface.
-      - bind9   #dns server 
-      - vsftpd  #ftp server 
-      - dovecot-imapd  #if you need to use imap, pop3, comment this setting 
-      - dovecot-pop3d
-      - samba
-      #- snmpd  #if no need to use SNMP, remove install
-      - nis  #Network Information Service (NIS)
-      - dnsmasq #Unless system is designated to act as a DNS caching, DNS forwarding and/or DHCP server, removed it
-      - rsync
-      - rsh-client 
-      - talk    #talk software use unencrypted protocols
-      - telnet
-      - rpcbind  #Remote Procedure Call; If RPC is not required,should removed
-
+insecure_packages: [isc-dhcp-server, slapd, ldap-utils, bind9, vsftpd, dovecot-imapd, dovecot-pop3d, samba, nis, telnet, talk, rsh-client, rsh-client]       
+     
 cron_tab_path: /etc
 cron_files_name: [cron.d, cron.daily, cron.hourly, cron.monthly, cron.weekly, crontab]
 
@@ -84,3 +67,5 @@ rsyslog_dest: /etc/rsyslog.
 
 auditd_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/auditd.conf.j2
 auditd_dest: /etc/audit/auditd.conf
+
+critical_file: [passwd, shadow, group, passwd-, shadow-,gshadow, group-,shells, opasswd]

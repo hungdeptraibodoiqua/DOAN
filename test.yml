@@ -16,7 +16,9 @@
     site_default_path: /etc/apache2/sites-enabled
     ssh_config_file_path: /etc/ssh/
     disable_modules: [status, proxy]
-    DocumentRoot: /var/www/html
+    DocumentRoot: /var/www/
+    insecure_packages: [isc-dhcp-server, slapd, ldap-utils, bind9] 
+    critical_file: [passwd, shadow, group, passwd-, shadow-,gshadow, group-,shells, opasswd]
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
@@ -25,9 +27,12 @@
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
-    - name: remove
+    - name: credential file permissions
       ansible.builtin.file:
-        path: "{{ DocumentRoot }}/index.html"
-        state: absent
+        path: "/etc/{{ item }}"
+        owner: root
+        group: root
+        mode: 0644
+      loop: "{{ critical_file }}"
       become: true
-
+      ignore_errors: true
