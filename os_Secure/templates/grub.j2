@@ -11,7 +11,7 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_CMDLINE_LINUX="find_preseed=/preseed.cfg auto noprompt priority=critical locale=en_US"
 GRUB_CMDLINE_LINUX="audit=1"
 GRUB_CMDLINE_LINUX="audit_backlog_limit=8192"
-
+GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
 
 # Uncomment to enable BadRAM filtering, modify to suit your needs
 # This works with Linux (no patch required) and with any kernel that obtains

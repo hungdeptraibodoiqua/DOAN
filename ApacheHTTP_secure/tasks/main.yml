@@ -5,6 +5,14 @@
     update_cache: true
   become: true
 
+- name: check apache2 version
+  ansible.builtin.command: systemctl status apache2
+  register: output
+
+- name: show output
+  ansible.builtin.debug:
+    var: output.stdout_lines
+
 - name: search for apache2 module
   ansible.builtin.command:
     apt search libapache2-mod
