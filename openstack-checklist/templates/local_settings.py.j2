@@ -14,13 +14,13 @@
 
 import os
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from horizon.utils import secret_key
 
 from openstack_dashboard.settings import HORIZON_CONFIG
 
-DEBUG = False
+DEBUG = True
 
 # This setting controls whether or not compression is enabled. Disabling
 # compression makes Horizon considerably slower, but makes it much easier
@@ -44,7 +44,7 @@ DEBUG = False
 # and don't forget to strip it from the client's request.
 # For more information see:
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # If Horizon is being served through SSL, then uncomment the following two
 # settings to better secure the cookies from security exploits
@@ -68,11 +68,11 @@ SESSION_COOKIE_SECURE = True
 
 # Turn off browser autocompletion for forms including the login form and
 # the database creation workflow if so desired.
-#HORIZON_CONFIG["password_autocomplete"] = "off"
+HORIZON_CONFIG["password_autocomplete"] = "off"
 
 # Setting this to True will disable the reveal button for password fields,
 # including on the login form.
-#HORIZON_CONFIG["disable_password_reveal"] = False
+HORIZON_CONFIG["disable_password_reveal"] = True
 
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -85,25 +85,19 @@ LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 # (usually behind a load-balancer). Either you have to make sure that a session
 # gets all requests routed to the same dashboard instance or you set the same
 # SECRET_KEY for all of them.
-SECRET_KEY = secret_key.generate_or_read_from_file('/var/lib/openstack-dashboard/secret_key')
+SECRET_KEY = secret_key.generate_or_read_from_file(
+    os.path.join(LOCAL_PATH, '.secret_key_store'))
 
 # We recommend you use memcached for development; otherwise after every reload
 # of the django development server, you will have to login again. To use
 # memcached set CACHES to something like below.
 # For more information, see
 # https://docs.djangoproject.com/en/1.11/topics/http/sessions/.
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
-    },
-}
-
 #CACHES = {
 #    'default': {
-#        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#    }
+#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#        'LOCATION': '127.0.0.1:11211',
+#    },
 #}
 
 # If you use ``tox -e runserver`` for developments,then configure
@@ -123,8 +117,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_HOST_USER = 'djangomail'
 #EMAIL_HOST_PASSWORD = 'top-secret!'
 
-OPENSTACK_HOST = "127.0.0.1"
-OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
 
 # The timezone of the server. This should correspond with the timezone
 # of your entire OpenStack installation, and hopefully be in UTC.
@@ -383,33 +375,19 @@ SECURITY_GROUP_RULES = {
 # following attribute to the URL of your choice.
 #HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
 
-###############################################################################
-# Ubuntu Settings
-###############################################################################
+WEBROOT = "/dashboard/"
+COMPRESS_OFFLINE = True
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "member"
+OPENSTACK_HOST = "192.168.133.132"
+OPENSTACK_KEYSTONE_URL = "http://192.168.133.132/identity/v3"
+ALLOWED_HOSTS = ["*"]
 
-# The default theme if no cookie is present
-DEFAULT_THEME = 'ubuntu'
 
-# Default Ubuntu apache configuration uses /horizon as the application root.
-WEBROOT='/horizon/'
-
-# By default, validation of the HTTP Host header is disabled.  Production
-# installations should have this set accordingly.  For more information
-# see https://docs.djangoproject.com/en/dev/ref/settings/.
-ALLOWED_HOSTS = '*'
-
-# Compress all assets offline as part of packaging installation
+##checklist
 COMPRESS_OFFLINE = True
 
 DISALLOW_IFRAME_EMBED = True
 
 SESSION_COOKIE_HTTPONLY = True 
 
-PASSWORD_AUTOCOMPLETE = True
-
-PASSWORD_AUTOCOMPLETE = off
-
-DISABLE_PASSWORD_REVEAL = True
-
 ENFORCE_PASSWORD_CHECK = True
-

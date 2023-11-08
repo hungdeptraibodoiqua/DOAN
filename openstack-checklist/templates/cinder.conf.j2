@@ -7,28 +7,28 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = cinder
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 interface = public
 auth_type = password
 
 [DEFAULT]
-cinder_internal_tenant_user_id = 86dceccafe964681bba7afa4ebdff2f0
-cinder_internal_tenant_project_id = f037a3e2fb2544dba9dfa0bbeebc0f6d
+cinder_internal_tenant_user_id = 1326042987a54038927efaa326376a76
+cinder_internal_tenant_project_id = 7fd3241d9e6a4993b6af17cbaf33b0ad
 graceful_shutdown_timeout = 5
-glance_api_servers = http://192.168.1.144/image
+glance_api_servers = http://192.168.133.132/image
 osapi_volume_workers = 2
-logging_exception_prefix = ERROR %(name)s [01;35m%(instance)s[00m
-logging_default_format_string = %(color)s%(levelname)s %(name)s [[00;36m-%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
-logging_context_format_string = %(color)s%(levelname)s %(name)s [[01;36m%(global_request_id)s %(request_id)s [00;36m%(project_name)s %(user_name)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
-logging_debug_format_suffix = [00;33m{{(pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d}}[00m
-transport_url = rabbit://stackrabbit:Hung472001@192.168.1.144:5672/
+logging_exception_prefix = ERROR %(name)s ^[[01;35m%(instance)s^[[00m
+logging_default_format_string = %(color)s%(levelname)s %(name)s [^[[00;36m-%(color)s] ^[[01;35m%(instance)s%(color)s%(message)s^[[00m
+logging_context_format_string = %(color)s%(levelname)s %(name)s [^[[01;36m%(global_request_id)s %(request_id)s ^[[00;36m%(project_name)s %(user_name)s%(color)s] ^[[01;35m%(instance)s%(color)s%(message)s^[[00m
+logging_debug_format_suffix = ^[[00;33m{{(pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d}}^[[00m
+transport_url = rabbit://stackrabbit:Hung472001@192.168.133.132:5672/
 default_volume_type = lvmdriver-1
 enabled_backends = lvmdriver-1
 rpc_response_timeout = 120
 quota_snapshots = 10
 quota_backups = 10
 quota_volumes = 10
-my_ip = 192.168.1.144
+my_ip = 192.168.133.132
 state_path = /opt/stack/data/cinder
 osapi_volume_listen = 0.0.0.0
 osapi_volume_extension = cinder.api.contrib.standard_extensions
@@ -36,11 +36,6 @@ rootwrap_config = /etc/cinder/rootwrap.conf
 api_paste_config = /etc/cinder/api-paste.ini
 target_helper = lioadm
 debug = True
-auth_strategy = keystone
-nova_api_insecure = False
-glance_api_insecure = False
-nas_secure_file_permissions = auto
-osapi_max_request_body_size = 114688
 
 [database]
 connection = mysql+pymysql://root:Hung472001@127.0.0.1/cinder?charset=utf8
@@ -70,10 +65,9 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = nova
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 interface = public
 auth_type = password
 
 [coordination]
-backend_url = etcd3+http://192.168.1.144:2379
-
+backend_url = etcd3+http://192.168.133.132:2379

@@ -1,6 +1,6 @@
 ---
 - name: test
-  hosts: localhost
+  hosts: openstack_controller
   # become: yes
   vars:
 
@@ -19,20 +19,49 @@
     DocumentRoot: /var/www/
     insecure_packages: [isc-dhcp-server, slapd, ldap-utils, bind9] 
     critical_file: [passwd, shadow, group, passwd-, shadow-,gshadow, group-,shells, opasswd]
+    keystone_config_dest: /etc/keystone/keystone.conf
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
-    #     /home/hung/Desktop/DOAN/mysql_credential.yml
-
-    # - name: include file
-    #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
-    - name: credential file permissions
-      ansible.builtin.file:
-        path: "/etc/{{ item }}"
-        owner: root
-        group: root
-        mode: 0644
-      loop: "{{ critical_file }}"
-      become: true
-      ignore_errors: true
+ 
+    # - name: add max_request_body_size
+    #   ansible.builtin.blockinfile:
+    #     path: "{{ keystone_config_dest }}"
+    #     block: |
+    #       [oslo_middleware]
+    #       max_request_body_size = 114688
+    #   become: true
+
+    # - name: set insecure_debug = false
+    #   ansible.builtin.lineinfile:
+    #     path: "{{ keystone_config_dest }}"
+    #     line: insecure_debug = false
+    #     insertafter: '^\[DEFAULT\]'
+    #   become: true
+
+    # - name: disable admin_token  from the [default] section
+    #   community.general.ini_file:
+    #     path: "{{ keystone_config_dest }}"
+    #     section: DEFAULT
+    #     option: admin_token
+    #     state: absent
+    #   become: true
+
+    # - name: disable admin_token  from the [default] section
+    #   community.general.ini_file:
+    #     path: "{{ keystone_config_dest }}"
+    #     section: DEFAULT
+    #     option: insecure_debug
+    #     state: absent
+    #   become: true
+    
+    # - name: set provider token = fernet
+    #   ansible.builtin.lineinfile:
+    #     path: "{{ keystone_config_dest }}"
+    #     regexp: "provider"
+    #     line: provider = fernet
+    #   become: true
+
+
+

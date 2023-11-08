@@ -8,11 +8,11 @@ pointer_model = ps2mouse
 graceful_shutdown_timeout = 5
 metadata_workers = 2
 osapi_compute_workers = 2
-transport_url = rabbit://stackrabbit:Hung472001@192.168.1.144:5672/
-logging_exception_prefix = ERROR %(name)s [01;35m%(instance)s[00m
-logging_default_format_string = %(color)s%(levelname)s %(name)s [[00;36m-%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
-logging_context_format_string = %(color)s%(levelname)s %(name)s [[01;36m%(global_request_id)s %(request_id)s [00;36m%(project_name)s %(user_name)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
-logging_debug_format_suffix = [00;33m{{(pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d}}[00m
+transport_url = rabbit://stackrabbit:Hung472001@192.168.133.132:5672/
+logging_exception_prefix = ERROR %(name)s ^[[01;35m%(instance)s^[[00m
+logging_default_format_string = %(color)s%(levelname)s %(name)s [^[[00;36m-%(color)s] ^[[01;35m%(instance)s%(color)s%(message)s^[[00m
+logging_context_format_string = %(color)s%(levelname)s %(name)s [^[[01;36m%(global_request_id)s %(request_id)s ^[[00;36m%(project_name)s %(user_name)s%(color)s] ^[[01;35m%(instance)s%(color)s%(message)s^[[00m
+logging_debug_format_suffix = ^[[00;33m{{(pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d}}^[[00m
 instances_path = /opt/stack/data/nova/instances
 state_path = /opt/stack/data/nova
 enabled_apis = osapi_compute
@@ -20,7 +20,7 @@ shutdown_timeout = 0
 metadata_listen = 0.0.0.0
 osapi_compute_listen = 0.0.0.0
 instance_name_template = instance-%08x
-my_ip = 192.168.1.144
+my_ip = 192.168.133.132
 rootwrap_config = /etc/nova/rootwrap.conf
 allow_resize_to_same_host = True
 debug = True
@@ -34,7 +34,6 @@ enabled_filters = AvailabilityZoneFilter,ComputeFilter,ComputeCapabilitiesFilter
 
 [scheduler]
 workers = 2
-discover_hosts_in_cells_interval = 300
 
 [neutron]
 region_name = RegionOne
@@ -44,7 +43,7 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = neutron
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 auth_type = password
 service_metadata_proxy = True
 default_floating_pool = public
@@ -72,7 +71,7 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = nova
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 interface = public
 auth_type = password
 
@@ -82,7 +81,7 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = nova
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 auth_type = password
 os_region_name = RegionOne
 
@@ -93,7 +92,7 @@ lock_path = /opt/stack/data/nova
 compute = auto
 
 [oslo_messaging_notifications]
-transport_url = rabbit://stackrabbit:Hung472001@192.168.1.144:5672/
+transport_url = rabbit://stackrabbit:Hung472001@192.168.133.132:5672/
 driver = messagingv2
 
 [notifications]
@@ -109,12 +108,12 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = nova
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 auth_type = password
 send_service_user_token = True
 
 [libvirt]
-live_migration_uri = qemu+ssh://stack@%s/system
+live_migration_uri = qemu+ssh://control@%s/system
 cpu_model = Nehalem
 cpu_mode = custom
 virt_type = kvm
@@ -126,7 +125,7 @@ project_name = service
 user_domain_name = Default
 password = Hung472001
 username = placement
-auth_url = http://192.168.1.144/identity
+auth_url = http://192.168.133.132/identity
 auth_type = password
 
 [os_vif_ovs]

@@ -11,11 +11,44 @@
     var: openstack_version
 
 ##check keystone path and permission if exists   
-- name: config keystone
-  ansible.builtin.template:
-    src: "{{ keystone_config_src }}"
-    dest: "{{ keystone_config_dest }}"
+##config keystone
+- name: add max_request_body_size
+  ansible.builtin.blockinfile:
+    path: "{{ keystone_config_dest }}"
+    block: |
+      [oslo_middleware]
+      max_request_body_size = 114688
   become: true
+
+- name: set insecure_debug = false
+  ansible.builtin.lineinfile:
+    path: "{{ keystone_config_dest }}"
+    line: insecure_debug = false
+    insertafter: '^\[DEFAULT\]'
+  become: true
+
+- name: disable admin_token  from the [default] section
+  community.general.ini_file:
+    path: "{{ keystone_config_dest }}"
+    section: DEFAULT
+    option: admin_token
+    state: absent
+  become: true
+
+- name: disable admin_token  from the [default] section
+  community.general.ini_file:
+    path: "{{ keystone_config_dest }}"
+    section: DEFAULT
+    option: insecure_debug
+    state: absent
+  become: true
+    
+- name: set provider token = fernet
+  ansible.builtin.lineinfile:
+    path: "{{ keystone_config_dest }}"
+    regexp: "provider"
+    line: provider = fernet
+  become: true 
   
 - name: set permission for keystone directory
   ansible.builtin.file:
@@ -90,4 +123,28 @@
     group: root
     mode: 0640
     recurse: true
+  become: true
+
+#config SSL for web 
+- name: create new folder for SSL
+  ansible.builtin.file:
+    path: /home/control/SSL
+    state: directory
+    mode: 0644
+  become: true
+
+- name: copy SSL cert
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /home/control/SSL 
+  with_fileglob: 
+    - "{{ SSL_cert_path }}/*"
+  become: true
+
+- name: config SSL
+  ansible.builtin.template:
+    src: "{{ dashboard_conf }}"
+    dest: "{{ dashboard_conf_location }}"
+    force: true
+    mode: 0644
   become: true
