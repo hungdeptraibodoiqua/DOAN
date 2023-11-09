@@ -1,2 +1,7 @@
 ---
 # handlers file for openstack-security-checklist
+- name: restart-apache2
+  ansible.builtin.systemd:
+    name: apache2.service
+    state: restarted
+  become: true

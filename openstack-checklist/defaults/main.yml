@@ -7,7 +7,7 @@ horizon_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/l
 horizon_dest: /opt/stack/horizon/openstack_dashboard/local/local_settings.py
 #horizon_dest: /etc/openstack-dashboard/local_settings.py
 dashboard_conf: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/horizon.conf.j2
-dashboard_conf_location: /etc/apache2/sites-available/horizon.conf
+dashboard_conf_apache: /etc/apache2/sites-available/horizon.conf
 
 nova_path: /etc/nova
 nova_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/nova.conf.j2
