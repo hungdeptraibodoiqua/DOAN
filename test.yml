@@ -3,30 +3,43 @@
   hosts: openstack_controller
   # become: yes
   vars:
-
-  
     keystone_path: /etc/keystone
-    horizon_path: /etc/openstack-dashboard/local_settings.py
-    nova_path: /etc/nova
-    cinder_path: /etc/cinder
-    manila_path: /etc/manila
-    neutron_path: /etc/neutron
-    cron_tab_path: /etc
-    cron_files_name: [cron.daily, cron.hourly, cron.monthly, cron.weekly, crontab]
-    site_default_path: /etc/apache2/sites-enabled
-    ssh_config_file_path: /etc/ssh/
-    disable_modules: [status, proxy]
-    DocumentRoot: /var/www/
-    insecure_packages: [isc-dhcp-server, slapd, ldap-utils, bind9] 
-    critical_file: [passwd, shadow, group, passwd-, shadow-,gshadow, group-,shells, opasswd]
+    keystone_config_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/keystone.conf.j2
     keystone_config_dest: /etc/keystone/keystone.conf
+
+    horizon_src: openstack-checklist/templates/local_settings.py.j2
+    horizon_dest: /opt/stack/horizon/openstack_dashboard/local/local_settings.py
+    #horizon_dest: /etc/openstack-dashboard/local_settings.py
+    dashboard_conf: /home/ansible/Desktop/DOAN/openstack-checklist/templates/horizon.conf.j2
+    dashboard_conf_apache: /etc/apache2/sites-available/horizon.conf
+
+    nova_path: /etc/nova
+    nova_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/nova.conf.j2
+    nova_dest: /etc/nova/nova.conf
+
+    cinder_path: /etc/cinder
+    cinder_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/cinder.conf.j2
+    cinder_dest: /etc/cinder/cinder.conf
+
+    neutron_path: /etc/neutron
+    neutron_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/neutron.conf.j2
+    neutron_dest: /etc/neutron/neutron.conf
+
+    SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/templates/SSL_cert
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
 
-    
+    - name: check version
+      ansible.builtin.command:
+        openstack --version
+      register: openstack_version
 
+    - name: show output
+      ansible.builtin.debug:
+        var: openstack_version.stdout_lines
 
+ 
 
 

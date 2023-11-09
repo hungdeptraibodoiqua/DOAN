@@ -8,7 +8,7 @@
 
 - name: show output
   ansible.builtin.debug:
-    var: openstack_version
+    var: openstack_version.stdout_lines
 
 ##config keystone
 - name: add max_request_body_size
@@ -58,7 +58,6 @@
     mode: 0640
     recurse: true
   become: true
-  when: keystone_path.stat.exists
 
 ##config horizon 
 - name: config horizon dashboard 
@@ -86,11 +85,6 @@
   become: true
 
 ##config nova compute service
-# - name: config nova 
-#   ansible.builtin.template:
-#     src: "{{ nova_src }}"
-#     dest: "{{ nova_dest }}"
-#   become: true
 - name: set auth_strategy to nova
   ansible.builtin.lineinfile:
     path: "{{ nova_dest }}"
@@ -108,12 +102,6 @@
   become: true
 
 ##config block storage cinder
-# - name: config cinder 
-#   ansible.builtin.template:
-#     src: "{{ cinder_src }}"
-#     dest: "{{ cinder_dest }}"
-#     mode: 0640
-#   become: true
 - name: set osapi_max_request_body_size
   ansible.builtin.lineinfile:
     path: "{{ cinder_dest }}"
@@ -138,11 +126,6 @@
   become: true
   
 ##network service neutron 
-# - name: config neutron
-#   ansible.builtin.template:
-#     src: "{{ neutron_src }}"
-#     dest: "{{ neutron_dest }}"
-#   become: true
 - name: config use_ssl 
   ansible.builtin.lineinfile:
     path: "{{ neutron_dest }}"
@@ -185,7 +168,7 @@
 - name: config SSL
   ansible.builtin.template:
     src: "{{ dashboard_conf }}"
-    dest: "{{ dashboard_conf_location }}"
+    dest: "{{ dashboard_conf_apache }}"
     force: true
     mode: 0644
   become: true
