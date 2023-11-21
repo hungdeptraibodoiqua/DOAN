@@ -17,7 +17,7 @@ ansible_python_interpreter=/usr/bin/python3.8
 ansible_user=compute
 ansible_password=Hung@472001
 
-# [localhost]
-# local ansible_connection=local
+[localhost]
+local ansible_connection=local
 
 ##  openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out openstack.cert -keyout openstack.key

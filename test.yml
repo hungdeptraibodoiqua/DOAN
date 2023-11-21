@@ -1,6 +1,6 @@
 ---
 - name: test
-  hosts: openstack_controller
+  hosts: localhost
   # become: yes
   vars:
     keystone_path: /etc/keystone
@@ -24,22 +24,24 @@
     neutron_path: /etc/neutron
     neutron_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/neutron.conf.j2
     neutron_dest: /etc/neutron/neutron.conf
-
+    splunk_version: 9.0.4.1
+    splunk_tgz: splunk-9.0.4.1-419ad9369127-Linux-x86_64.tgz
+    splunk_tgz_checksum: 41ece26237995aa9a9e9030a1ceed250
     SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/templates/SSL_cert
   tasks:
     # - name: include file
     #   ansible.builtin.include_vars: 
     #     /home/ansible/Desktop/DOAN/mysql_credential.yml
 
-    - name: check version
-      ansible.builtin.command:
-        openstack --version
-      register: openstack_version
-
-    - name: show output
-      ansible.builtin.debug:
-        var: openstack_version.stdout_lines
-
+    - name: Download by wget {{ splunk_tgz }}
+      ansible.builtin.get_url:
+        url: "https://download.splunk.com/products/splunk/releases/{{ splunk_version }}/linux/{{ splunk_tgz }}"
+        checksum: "md5:{{ splunk_tgz_checksum }}"
+        dest: /home/ansible
+        mode: '0640'  
+        owner: root
+        group: root
+      become: true
  
 
 

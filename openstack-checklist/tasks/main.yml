@@ -1,6 +1,5 @@
 ---
 # tasks file for openstack-security-checklist
-##identity service checklist
 - name: check version
   ansible.builtin.command:
     openstack --version
@@ -34,14 +33,19 @@
     state: absent
   become: true
 
-- name: disable admin_token  from the [default] section
-  community.general.ini_file:
+- name: set security_compliance
+  ansible.builtin.blockinfile:
     path: "{{ keystone_config_dest }}"
-    section: DEFAULT
-    option: insecure_debug
-    state: absent
+    block: |
+      [security_compliance]
+       lockout_failure_attempts = 6 
+       lockout_duration = 1800
+       disable_user_account_days_inactive = 90
+       password_expires_days = 90
+       unique_last_password_count= 5
+       password_regex = ^(?=.*\d)(?=.*[a-zA-Z]).{7,}$
   become: true
-    
+
 - name: set provider token = fernet
   ansible.builtin.lineinfile:
     path: "{{ keystone_config_dest }}"
@@ -72,7 +76,7 @@
     path: "{{ keystone_config_dest }}"
     block: |
       [glance]
-      api_insecure = False
+      api_insecure = false
   become: true
 
 - name: set permission for horizon directory
@@ -88,8 +92,16 @@
 - name: set auth_strategy to nova
   ansible.builtin.lineinfile:
     path: "{{ nova_dest }}"
-    line: api_insecure = False
+    line: auth_strategy = keystone
     insertafter: '^\[DEFAULT\]'
+  become: true
+
+- name: set auth_strategy to nova
+  ansible.builtin.blockinfile:
+    path: "{{ nova_dest }}"
+    block: |
+      [api]
+      auth_strategy = keystone
   become: true
 
 - name: set permission for nova directory
@@ -102,6 +114,13 @@
   become: true
 
 ##config block storage cinder
+- name: set auth_strategy 
+  ansible.builtin.lineinfile:
+    path: "{{ cinder_dest }}"
+    line: auth_strategy = keystone
+    insertafter: '^\[DEFAULT\]'
+  become: true
+
 - name: set osapi_max_request_body_size
   ansible.builtin.lineinfile:
     path: "{{ cinder_dest }}"
@@ -116,6 +135,13 @@
     insertafter: '^\[DEFAULT\]'
   become: true
 
+- name: set glance_api_insecure 
+  ansible.builtin.lineinfile:
+    path: "{{ cinder_dest }}"
+    line: glance_api_insecure = false
+    insertafter: '^\[DEFAULT\]'
+  become: true
+
 - name: set permission for nova directory
   ansible.builtin.file:
     path: "{{ cinder_path }}"
@@ -126,17 +152,17 @@
   become: true
   
 ##network service neutron 
-- name: config use_ssl 
+- name: use ssl for neutron
   ansible.builtin.lineinfile:
     path: "{{ neutron_dest }}"
-    line: use_ssl = True
+    line: use_ssl = true
     insertafter: '^\[DEFAULT\]'
   become: true
   
 - name: set auth_strategy 
   ansible.builtin.lineinfile:
     path: "{{ neutron_dest }}"
-    line: use_ssl = True
+    line: auth_strategy = keystone 
     insertafter: '^\[DEFAULT\]'
   become: true
 

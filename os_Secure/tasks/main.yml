@@ -1,9 +1,9 @@
 ---    
 ###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
-- name: Separate partition (/tmp, /var, /var/tmp... using fstab)
+- name: Separate partition 
   ansible.builtin.template:
     src: "{{ new_fstab_path }}"
-    dest: "{{ origin_fstab_path }}/fstab"
+    dest: "{{ origin_fstab_path }}"
     mode: 0644
   become: true
   notify: reload-deamon
@@ -17,14 +17,14 @@
 
 ##remount /tmp, /var, /var/tmp, /var/log, /var/log/audit, /home
 - name: remount
-  ansible.builtin.raw: 
-    mount -o remount /tmp #/var/tmp; /var/log; /var/log/audit; /home
+  ansible.builtin.shell: 
+    mount "{{ item }}" #/var/tmp; /var/log; /var/log/audit; /home
+  loop: "{{ mount_file }}"
   become: true
 
 - name: check result
-  ansible.builtin.raw:
-    "findmnt -nk /tmp && findmnt -nk /var && findmnt -kn /var/tmp && findmnt -kn /var/log 
-    && findmnt -kn /home && findmnt -kn /dev/shm"
+  ansible.builtin.shell:
+    "findmnt -nk /tmp && findmnt -kn /dev/shm"
   register: mount_output
   
 - name: display output
@@ -176,6 +176,7 @@
     owner: root
     group: root
   become: true
+  ignore_errors: true
 
 ##Configure Time Synchronization
 ##ensure just 1 in 3 time sync in use: NTP, chrony, systemd-timesyncd.service
@@ -257,6 +258,7 @@
     state: absent
     purge: true
   become: true
+  ignore_errors: true
 
 ##Ensure some insecure packages is not installed
 - name: uninstall un-used and insecure packages  
@@ -276,6 +278,7 @@
     state: stopped
     masked: true
   become: true
+  ignore_errors: true
 
 #if need to use this host firewall, run this task
 - name: install ufw firewall (just use only ufw or nftable)
@@ -346,7 +349,6 @@
   become: true
 
 ##Ensure SSH access is limited ??
-
 - name: config sshd_config 
   ansible.builtin.template:
     src: "{{ sshd_src }}"
@@ -355,7 +357,7 @@
     group: root
     mode: 0600
   become: true
-  handlers: restart-ssh
+  notify: restart-ssh
 
 ##privilege escalation
 - name: config sudoers
@@ -372,12 +374,14 @@
   ansible.builtin.stat:
     path: "{{ libpam_modules_path }}/pam_pwquality.so"  # Update the path if needed
   register: pwquality_file
+  become: true
 
 - name: Install pam_pwquality package if not present
-  ansible.builtin.apt:  # Use 'ansible.builtin.apt' if you are using a Debian-based system
+  ansible.builtin.apt:  
     name: libpam-pwquality
     state: present
   when: pwquality_file.stat.exists == false
+  become: true
 
 - name: Print a message if pam_pwquality.so was installed
   debug:
@@ -443,7 +447,7 @@
     mode: 0644
   become: true
   notify: 
-    - start-systemd-journal-upload
+    - restart-systemd-journal-upload
     - not-receive-remote-log
 
 - name: config journald.conf 
@@ -475,22 +479,22 @@
 #   become: true
 #   notify: enabled-
 
-##Configure System Accounting (auditd)
-- name: install auditd 
-  ansible.builtin.apt:
-    name: auditd
-    state: latest
-  become: true
-  notify: enabled-auditd
+# ##Configure System Accounting (auditd)
+# - name: install auditd 
+#   ansible.builtin.apt:
+#     name: auditd
+#     state: latest
+#   become: true
+#   notify: enabled-auditd
 
-- name: config auditd.conf 
-  ansible.builtin.template:
-    src: "{{ auditd_src }}"
-    dest: "{{ auditd_dest }}"
-    owner: root
-    group: root
-    mode: 0640
-  become: true
+# - name: config auditd.conf 
+#   ansible.builtin.template:
+#     src: "{{ auditd_src }}"
+#     dest: "{{ auditd_dest }}"
+#     owner: root
+#     group: root
+#     mode: 0640
+#   become: true
 
 ##system file permissions
 - name: credential file permissions
@@ -510,6 +514,7 @@
   register: users_to_remove
   changed_when: false
   check_mode: no 
+  become: true
 
 - name: Remove users with UID 0 other than root
   ansible.builtin.user:
@@ -518,3 +523,8 @@
   with_items: "{{ users_to_remove.stdout_lines }}"
   when: users_to_remove.stdout_lines | length > 0
   become: true
+
+- name: RESULT
+  ansible.builtin.debug:
+    msg: DONE
+  tags: done 

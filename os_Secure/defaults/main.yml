@@ -1,9 +1,10 @@
 ---
 #this is default variable for os_Secure playbook, change if needed
+mount_file: [/tmp, /dev/shm ]
 tmp_mount_config_file: /home/ansible/Desktop/DOAN/os_Secure/templates/tmp.mount.j2
 tmp_mount_correct_location: /etc/systemd/system/tmp.mount
-origin_fstab_path: /etc
-new_fstab_path: /home/ansible/Desktop/DOAN/os_Secure/templates/fstab.j2
+origin_fstab_path: /etc/fstab
+new_fstab_path: /home/ansible/Desktop/DOAN/os_Secure/templates/fstab/fstab.j2
 
 auditd_path: /var/log/audit 
 
@@ -33,10 +34,10 @@ cron_files_name: [cron.d, cron.daily, cron.hourly, cron.monthly, cron.weekly, cr
 
 ssh_config_file_path: /etc/ssh
 
-sshd_src: /home/hung/Desktop/DOAN/os_Secure/templates/sshd_config.j2
+sshd_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sshd/sshd_config.j2
 sshd_dest: /etc/ssh/sshd_config
 
-sudoers_src: /home/hung/Desktop/DOAN/os_Secure/templates/sudoers.j2
+sudoers_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sudoers.j2
 sudoers_dest: /etc/sudoers
 
 libpam_modules_path: /lib/x86_64-linux-gnu/security

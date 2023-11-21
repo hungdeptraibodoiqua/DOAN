@@ -5,6 +5,8 @@
 ###include credential file
 #store 2 variables: mysql_root_username and mysql_root_password
 #it will be encrypted by ansible-vault
+#sudo apt-get install libmysqlclient21
+
 - name: include credential mysql var file
   ansible.builtin.include_vars:
     file: /home/hung/Desktop/DOAN/mysql_credential.yml
@@ -101,8 +103,8 @@
   ansible.builtin.file:
     path: "{{ mysql_slow_query_log_file }}"
     mode: 0660
-    owner: "{{ mysql_owner }}"
-    group: "{{ mysql_group }}"
+    owner: root 
+    group: root
   when: (slow_query_log_status | bool) == true
   become: true
 
@@ -313,7 +315,7 @@
 ###task 18 : password complexity (0644), Limit Failed Login Attempts and set time delay
 - name: config passwd policy (length, complexity, lifetime)
   ansible.builtin.template:
-    src: /home/hung/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf.j2
+    src: "{{ mysql_cnf_location }}"
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
     mode: 0644
   become: true
