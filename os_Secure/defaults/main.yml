@@ -1,30 +1,32 @@
 ---
 #this is default variable for os_Secure playbook, change if needed
 mount_file: [/tmp, /dev/shm ]
-tmp_mount_config_file: /home/ansible/Desktop/DOAN/os_Secure/templates/tmp.mount.j2
-tmp_mount_correct_location: /etc/systemd/system/tmp.mount
-origin_fstab_path: /etc/fstab
-new_fstab_path: /home/ansible/Desktop/DOAN/os_Secure/templates/fstab/fstab.j2
+
+tmp_mount_src: /home/ansible/Desktop/DOAN/os_Secure/files/tmp.mount
+tmp_mount_dst: /etc/systemd/system/tmp.mount
+
+fstab_src: /home/ansible/Desktop/DOAN/os_Secure/files/fstab/fstab
+fstab_dst: /etc/fstab
 
 auditd_path: /var/log/audit 
 
 boot_loader_path: /boot/grub/grub.cfg
 
-sysctl_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sysctl.conf.j2
+sysctl_src: /home/ansible/Desktop/DOAN/os_Secure/files/sysctl.conf
 sysctl_dest: /etc/sysctl.conf
 
-apport_src: /home/ansible/Desktop/DOAN/os_Secure/templates/apport.j2
+apport_src: /home/ansible/Desktop/DOAN/os_Secure/files/apport
 apport_dest: /etc/default/apport
 
-grub_src: /home/ansible/Desktop/DOAN/os_Secure/templates/grub.j2
+grub_src: /home/ansible/Desktop/DOAN/os_Secure/files/grub
 grb_dest: /etc/default/grub
 
-issue_net_src: /home/ansible/Desktop/DOAN/os_Secure/templates/issue.net.j2
+issue_net_src: /home/ansible/Desktop/DOAN/os_Secure/files/issue.net
 issue_net_dest: /etc/issue.net
 
 motd_path: /etc/motd
 
-XDMCP_custom_src: /home/ansible/Desktop/DOAN/os_Secure/templates/XDMCPcustom.conf.j2
+XDMCP_custom_src: /home/ansible/Desktop/DOAN/os_Secure/files/XDMCPcustom.conf
 XDMCP_custom_dest: /etc/gdm3/custom.conf
 
 insecure_packages: [isc-dhcp-server, slapd, ldap-utils, bind9, vsftpd, dovecot-imapd, dovecot-pop3d, samba, nis, telnet, talk, rsh-client, rsh-client]       
@@ -34,39 +36,39 @@ cron_files_name: [cron.d, cron.daily, cron.hourly, cron.monthly, cron.weekly, cr
 
 ssh_config_file_path: /etc/ssh
 
-sshd_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sshd/sshd_config.j2
+sshd_src: /home/ansible/Desktop/DOAN/os_Secure/files/sshd/sshd_config
 sshd_dest: /etc/ssh/sshd_config
 
-sudoers_src: /home/ansible/Desktop/DOAN/os_Secure/templates/sudoers.j2
+sudoers_src: /home/ansible/Desktop/DOAN/os_Secure/files/sudoers
 sudoers_dest: /etc/sudoers
 
 libpam_modules_path: /lib/x86_64-linux-gnu/security
 
-pwquality_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/pwquality.conf.j2
+pwquality_src: /home/ansible/Desktop/DOAN/os_Secure/files/PAM/pwquality.conf
 pwquality_dest: /etc/security/pwquality.conf
 
-common_password_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-password.j2
+common_password_src: /home/ansible/Desktop/DOAN/os_Secure/files/PAM/common-password
 common_password_dest: /etc/pam.d/common-password
 
-common_auth_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-auth.j2
+common_auth_src: /home/ansible/Desktop/DOAN/os_Secure/files/PAM/common-auth
 common_auth_dest: /etc/pam.d/common-auth      
 
-login_def_src: /home/ansible/Desktop/DOAN/os_Secure/templates/Environment_user_account/login.defs.j2
+login_def_src: /home/ansible/Desktop/DOAN/os_Secure/files/Environment_user_account/login.defs
 login_def_dest: /etc/login.defs
 
-common_session_src: /home/ansible/Desktop/DOAN/os_Secure/templates/PAM/common-session.j2
+common_session_src: /home/ansible/Desktop/DOAN/os_Secure/files/PAM/common-session
 common_session_dest: /etc/pam.d/common-
 
-journal_upload_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/journal-upload.conf.j2
+journal_upload_src: /home/ansible/Desktop/DOAN/os_Secure/files/logging_and_audit/journal-upload.conf
 journal_upload_dest: /etc/systemd/journal-upload.conf 
 
-journald_conf_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/journald.conf.j2
+journald_conf_src: /home/ansible/Desktop/DOAN/os_Secure/files/logging_and_audit/journald.conf
 journald_conf_dest: /etc/systemd/journald.conf
 
-rsyslog_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/rsyslog.conf.j2
+rsyslog_src: /home/ansible/Desktop/DOAN/os_Secure/files/logging_and_audit/rsyslog.conf
 rsyslog_dest: /etc/rsyslog.
 
-auditd_src: /home/ansible/Desktop/DOAN/os_Secure/templates/logging_and_audit/auditd.conf.j2
+auditd_src: /home/ansible/Desktop/DOAN/os_Secure/files/logging_and_audit/auditd.conf
 auditd_dest: /etc/audit/auditd.conf
 
 critical_file: [passwd, shadow, group, passwd-, shadow-,gshadow, group-,shells, opasswd]

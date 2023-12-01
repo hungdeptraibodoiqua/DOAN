@@ -1,9 +1,9 @@
----    
+---
 ###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
-- name: Separate partition 
-  ansible.builtin.template:
-    src: "{{ new_fstab_path }}"
-    dest: "{{ origin_fstab_path }}"
+- name: Separate partition
+  copy:
+    src: "{{ fstab_src }}"
+    dest: "{{ fstab_dst }}"
     mode: 0644
   become: true
   notify: reload-deamon
@@ -11,22 +11,20 @@
 
 ##if system not mounted before, run "mount" command, else run "mount -o remount" command
 # - name: remount
-#   ansible.builtin.command: 
+#   ansible.builtin.command:
 #     mount /tmp
 #   become: true
 
 ##remount /tmp, /var, /var/tmp, /var/log, /var/log/audit, /home
 - name: remount
-  ansible.builtin.shell: 
-    mount "{{ item }}" #/var/tmp; /var/log; /var/log/audit; /home
+  ansible.builtin.shell: mount "{{ item }}" #/var/tmp; /var/log; /var/log/audit; /home
   loop: "{{ mount_file }}"
   become: true
 
 - name: check result
-  ansible.builtin.shell:
-    "findmnt -nk /tmp && findmnt -kn /dev/shm"
+  ansible.builtin.shell: "findmnt -nk /tmp && findmnt -kn /dev/shm"
   register: mount_output
-  
+
 - name: display output
   ansible.builtin.debug:
     var: mount_output.stdout_lines
@@ -68,7 +66,7 @@
 
 # systemctl stop apport.service
 # systemctl --now disable apport.service
-- name: stop apport service 
+- name: stop apport service
   ansible.builtin.systemd:
     name: apport.service
     state: stopped
@@ -76,8 +74,7 @@
   become: true
   notify: reload-deamon
 
-
-##you also can just remove this service 
+##you also can just remove this service
 # - name: remove apport service
 #   ansible.builtin.apt:
 #     name: apport
@@ -181,7 +178,7 @@
 ##Configure Time Synchronization
 ##ensure just 1 in 3 time sync in use: NTP, chrony, systemd-timesyncd.service
 #case 1: use chrony
-# - name: task 10 - use chrony 
+# - name: task 10 - use chrony
 #   ansible.builtin.apt:
 #     name: chrony
 #     state: latest
@@ -200,10 +197,10 @@
   notify:
     - uninstall-chrony
     - uninstall-NTP
-  ignore_errors: true  #some service will return error if not exists when uninstall
+  ignore_errors: true #some service will return error if not exists when uninstall
 
 # #case 3: use NTP (need to config)
-# - name: task 10 - use NTP 
+# - name: task 10 - use NTP
 #   ansible.builtin.apt:
 #     name: ntp
 #     state: latest
@@ -216,9 +213,9 @@
 #task: config chrony, Ensure chrony is running as user _chrony
 #task: Ensure chrony is running as user _chrony
 #task: config systemd-timesyncd.service
-#task: config ntp 
+#task: config ntp
 #task: Ensure ntp is configured with authorized timeserver
-#task: Ensure ntp is running as user ntp 
+#task: Ensure ntp is running as user ntp
 
 ##Ensure X Window System is not installed (do not run this task if you need GUI to use)
 # - name: task - Ensure X Window System is not installed (do not run if still need GUI)
@@ -228,8 +225,8 @@
 #     purge: true
 #   become: true
 
-##Ensure Avahi Server is not installed 
-- name: stop avahi-daemon service 
+##Ensure Avahi Server is not installed
+- name: stop avahi-daemon service
   ansible.builtin.systemd:
     name: avahi-daaemon.service
     state: stopped
@@ -243,7 +240,7 @@
   become: true
   ignore_errors: true
 
-- name: Ensure Avahi Server is not installed 
+- name: Ensure Avahi Server is not installed
   ansible.builtin.apt:
     name: avahi-daemon
     state: absent
@@ -254,14 +251,14 @@
 ##Ensure Common Unix Print System (CUPS) is not installed
 - name: Ensure Common Unix Print System (CUPS) is not installed (don't run this task if need to use this service)
   ansible.builtin.apt:
-    name: cups 
+    name: cups
     state: absent
     purge: true
   become: true
   ignore_errors: true
 
 ##Ensure some insecure packages is not installed
-- name: uninstall un-used and insecure packages  
+- name: uninstall un-used and insecure packages
   ansible.builtin.apt:
     name: "{{ item }}"
     state: absent
@@ -286,7 +283,7 @@
     name: ufw
     state: latest
   become: true
-  notify: 
+  notify:
     - start-ufw
     - config-ufw-loopback-traffic
     - uninstall-iptables-persistent
@@ -299,7 +296,7 @@
 #   become: true
 #   notify:
 #     - enalbe-nftables
-#     - config-nftables-loopback-traffic 
+#     - config-nftables-loopback-traffic
 #     - uninstall-ufw
 #     - flushed-iptables
 #   ignore_errors: true
@@ -309,11 +306,11 @@
 # - name: install iptables (just use only ufw or nftable)
 #   ansible.builtin.apt:
 #     name:
-#       - iptables 
+#       - iptables
 #       - iptables-persistent
 #     state: latest
 #   become: true
-#   notify: 
+#   notify:
 #     - config-iptables-loopback-traffic
 #     - config-ipv6-loopback-traffic
 #     - uninstall-nftables
@@ -337,7 +334,7 @@
   loop: "{{ cron_files_name }}"
   become: true
 
-##config ssh 
+##config ssh
 - name: Ensure permissions on /etc/ssh/sshd_config are configured
   ansible.builtin.file:
     path: "{{ ssh_config_file_path }}"
@@ -349,7 +346,7 @@
   become: true
 
 ##Ensure SSH access is limited ??
-- name: config sshd_config 
+- name: config sshd_config
   ansible.builtin.template:
     src: "{{ sshd_src }}"
     dest: "{{ sshd_dest }}"
@@ -369,15 +366,15 @@
     mode: 0440
   become: true
 
-#config PAM 
+#config PAM
 - name: Check if pam_pwquality.so exists
   ansible.builtin.stat:
-    path: "{{ libpam_modules_path }}/pam_pwquality.so"  # Update the path if needed
+    path: "{{ libpam_modules_path }}/pam_pwquality.so" # Update the path if needed
   register: pwquality_file
   become: true
 
 - name: Install pam_pwquality package if not present
-  ansible.builtin.apt:  
+  ansible.builtin.apt:
     name: libpam-pwquality
     state: present
   when: pwquality_file.stat.exists == false
@@ -425,7 +422,7 @@
 - name: /etc/shells without nologin
   ansible.builtin.lineinfile:
     path: /etc/shells
-    regexp: '.*nologin.*'
+    regexp: ".*nologin.*"
     state: absent
   become: true
 
@@ -446,11 +443,11 @@
     group: root
     mode: 0644
   become: true
-  notify: 
+  notify:
     - restart-systemd-journal-upload
     - not-receive-remote-log
 
-- name: config journald.conf 
+- name: config journald.conf
   ansible.builtin.template:
     src: "{{ journald_conf_src }}"
     dest: "{{ journald_conf_dest }}"
@@ -480,14 +477,14 @@
 #   notify: enabled-
 
 # ##Configure System Accounting (auditd)
-# - name: install auditd 
+# - name: install auditd
 #   ansible.builtin.apt:
 #     name: auditd
 #     state: latest
 #   become: true
 #   notify: enabled-auditd
 
-# - name: config auditd.conf 
+# - name: config auditd.conf
 #   ansible.builtin.template:
 #     src: "{{ auditd_src }}"
 #     dest: "{{ auditd_dest }}"
@@ -509,11 +506,10 @@
 
 ##Ensure root is the only UID 0 account
 - name: Find users with UID 0 other than root
-  ansible.builtin.shell: 
-    "getent passwd | awk -F':' '$3 == 0 && $1 != \"root\" { print $1 }'"
+  ansible.builtin.shell: 'getent passwd | awk -F'':'' ''$3 == 0 && $1 != "root" { print $1 }'''
   register: users_to_remove
   changed_when: false
-  check_mode: no 
+  check_mode: no
   become: true
 
 - name: Remove users with UID 0 other than root
@@ -527,4 +523,4 @@
 - name: RESULT
   ansible.builtin.debug:
     msg: DONE
-  tags: done 
+  tags: done
