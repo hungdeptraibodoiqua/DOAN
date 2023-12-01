@@ -2,10 +2,10 @@
 keystone_path: /etc/keystone
 keystone_config_dest: /etc/keystone/keystone.conf
 
-horizon_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/local_settings.py.j2
+horizon_src: /home/ansible/Desktop/DOAN/openstack-security-checklist/files/local_settings.py.j2
 horizon_dest: /opt/stack/horizon/openstack_dashboard/local
 #horizon_dest: /etc/openstack-dashboard/local_settings.py
-dashboard_conf: /home/ansible/Desktop/DOAN/openstack-security-checklist/templates/horizon.conf.j2
+dashboard_conf: /home/ansible/Desktop/DOAN/openstack-security-checklist/files/horizon.conf.j2
 dashboard_conf_apache: /etc/apache2/sites-available/horizon.conf
 
 nova_path: /etc/nova
@@ -17,4 +17,4 @@ cinder_dest: /etc/cinder/cinder.conf
 neutron_path: /etc/neutron
 neutron_dest: /etc/neutron/neutron.conf
 
-SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/templates/SSL_cert
+SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/files/SSL_cert

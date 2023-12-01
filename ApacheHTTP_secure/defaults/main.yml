@@ -1,7 +1,7 @@
 ---
 # defaults file for ApacheHTTP_secure
 ##sudo openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out apache.crt -keyout apache.key: gen ssl
-apache2_src: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/templates/apache2.conf.j2
+apache2_src: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/files/apache2.conf
 apache2_dest: /etc/apache2/apache2.conf
 
 #list module need to install
@@ -9,7 +9,7 @@ apache2_dest: /etc/apache2/apache2.conf
 
 #add module name to []
 #auth_basic, auth_digest,autoindex need manually disable because it need to confirm 
-disable_modules: [status, proxy, userdir, info, dav, ]
+disable_modules: [status, proxy, userdir, info, dav]
 
 #add module name to []
 enable_modules: []

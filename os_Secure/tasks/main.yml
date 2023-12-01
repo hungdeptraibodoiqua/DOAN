@@ -1,13 +1,14 @@
 ---
 ###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
 - name: Separate partition
-  copy:
+  ansible.builtin.copy:
     src: "{{ fstab_src }}"
     dest: "{{ fstab_dst }}"
+    force: true  #replace old file
     mode: 0644
   become: true
   notify: reload-deamon
-  tags: task1
+ 
 
 ##if system not mounted before, run "mount" command, else run "mount -o remount" command
 # - name: remount
@@ -50,17 +51,19 @@
   become: true
 
 - name: config ASLR, ptrace_scope and some network config
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ sysctl_src }}"
     dest: "{{ sysctl_dest }}"
+    force: true
     mode: 0644
   become: true
 
 ##disable apport.service (enabled=0)
 - name: Ensure Automatic Error Reporting is not enabled
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ apport_src }}"
     dest: "{{ apport_dest }}"
+    force: true
     mode: 0644
   become: true
 
@@ -94,9 +97,10 @@
 
 #GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
 - name: config AppArmor
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ grub_src }}"
     dest: "{{ grb_dest }}"
+    force: true
     mode: 0644
   become: true
   notify: update-grub
@@ -117,9 +121,10 @@
 
 ##Command Line Warning Banners
 - name: Ensure local login warning banner is configured properly
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ issue_net_src }}"
     dest: "{{ issue_net_dest }}"
+    force: true
     mode: 0600
     owner: root
     group: root
@@ -166,10 +171,11 @@
 #   become: true
 
 - name: Ensure XDCMP is not enabled
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ XDMCP_custom_src }}"
     dest: "{{ XDMCP_custom_dest }}"
     mode: 0644
+    force: true
     owner: root
     group: root
   become: true
@@ -358,9 +364,10 @@
 
 ##privilege escalation
 - name: config sudoers
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ sudoers_src }}"
     dest: "{{ sudoers_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0440
@@ -386,9 +393,10 @@
   when: pwquality_file.stat.exists == false
 
 - name: config pam_pwquality
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ pwquality_src }}"
     dest: "{{ pwquality_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0644
@@ -396,9 +404,10 @@
   notify: include-common-password
 
 - name: Ensure lockout for failed password attempts is configured
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ common_auth_src }}"
     dest: "{{ common_auth_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0644
@@ -410,9 +419,10 @@
   become: true
 
 - name: config login.def
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ login_def_src }}"
     dest: "{{ login_def_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0644
@@ -436,9 +446,10 @@
   become: true
 
 - name: config systemd-journal-remote
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ journal_upload_src }}"
     dest: "{{ journal_upload_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0644
@@ -448,9 +459,10 @@
     - not-receive-remote-log
 
 - name: config journald.conf
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ journald_conf_src }}"
     dest: "{{ journald_conf_dest }}"
+    force: true
     owner: root
     group: root
     mode: 0644

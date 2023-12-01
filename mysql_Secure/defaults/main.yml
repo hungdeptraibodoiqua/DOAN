@@ -11,4 +11,4 @@ relay_log_file: /var/lib/mysql/ubuntu-relay-bin
 general_log_file: /var/lib/mysql/ubuntu.log
 plugin_dir: /usr/lib/mysql/plugin/
 secure_file_priv: /var/lib/mysql-files/
-mysql_cnf_location: /home/ansible/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf.j2
+mysql_cnf_location: /home/ansible/Desktop/DOAN/mysql_Secure/templates/mysqld.cnf
