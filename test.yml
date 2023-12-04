@@ -1,12 +1,9 @@
 ---
 - name: test
   hosts: localhost
-  # become: yes
   vars:
     splunk_version: 9.0.4.1
     splunk_tgz: splunk-9.0.4.1-419ad9369127-Linux-x86_64.tgz
-    splunk_tgz_checksum: 41ece26237995aa9a9e9030a1ceed250
-    SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/templates/SSL_cert
   tasks:
     - name: Download by wget {{ splunk_tgz }}
       ansible.builtin.get_url:
