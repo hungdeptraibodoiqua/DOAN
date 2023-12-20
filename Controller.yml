@@ -1,6 +1,6 @@
 ---
 - hosts: openstack_controller
   roles:
-    - mysql_Secure
     - os_Secure
-    - openstack-checklist
+
+  

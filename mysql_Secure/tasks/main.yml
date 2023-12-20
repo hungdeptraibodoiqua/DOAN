@@ -9,7 +9,7 @@
 
 - name: include credential mysql var file
   ansible.builtin.include_vars:
-    file: /home/hung/Desktop/DOAN/mysql_credential.yml
+    file: /home/ansible/Desktop/DOAN/mysql_credential.yml
 
 ###task 1:check mysql and print version installed
 - name: Get MySQL version
@@ -31,11 +31,30 @@
   ansible.builtin.debug:
     var: user_for_operate_mysql.stdout_lines
 
-- name: create if non-exists
-  ansible.builtin.raw: 
-      '/usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || : 
-      /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/false \ 
-      -c "Sysql Server" -u 27 mysql >/dev/null 2>&1 || :'
+
+#     '/usr/sbin/groupadd -g 27 -o -r mysql >/dev/null 2>&1 || : 
+#      /usr/sbin/useradd -M -N -g mysql -o -r -d /var/lib/mysql -s /bin/false \ 
+#     -c "Sysql Server" -u 27 mysql >/dev/null 2>&1 || :'
+
+
+- name: add mysql group
+  ansible.builtin.group:
+    name: mysql
+    gid: 27
+    non_unique: true
+    system: true
+  when: user_for_operate_mysql.failed
+  become: true
+
+- name: add mysql user
+  ansible.builtin.user:
+    name: mysql
+    create_home: false
+    home: /var/lib/mysql
+    group: mysql
+    non_unique: true
+    shell: /bin/false
+    uid: 27
   when: user_for_operate_mysql.failed
   become: true
 
@@ -47,7 +66,6 @@
   ansible.builtin.raw:
     'getent passwd mysql | egrep "^.*[\/bin\/false|\/sbin\/nologin]$"'  ###Lack of output implies a fail
   register: interact_login
-  changed_when: false
   become: true
 
 - name: show output
@@ -64,7 +82,7 @@
 - name: check /var/lib/mysql
   ansible.builtin.stat:
     path: "{{ mysql_datadir }}"
-  register: mysql_datadi
+  register: mysql_datadir
 
 - name: show output
   ansible.builtin.debug:
@@ -79,15 +97,6 @@
     group: mysql
     mode: 0750
   when: not mysql_datadir.stat.exists
-
-###task 5: Ensure 'data-dir (/var/lib/mysql)' Has Appropriate Permissions 
-- name: right perms for mysql data dir
-  ansible.builtin.file:
-    path: /var/lib/mysql
-    state: directory
-    recurse: true
-    mode: 0750
-  when: mysql_datadir.stat.exists == true
 
 ###task 6 :check slow_query_log
 - name: check status of slow query log
@@ -314,7 +323,7 @@
 
 ###task 18 : password complexity (0644), Limit Failed Login Attempts and set time delay
 - name: config passwd policy (length, complexity, lifetime)
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: "{{ mysql_cnf_location }}"
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
     mode: 0644

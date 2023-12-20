@@ -175,26 +175,30 @@
     recurse: true
   become: true
 
-#config SSL for web 
-- name: create new folder for SSL
-  ansible.builtin.file:
-    path: /home/control/SSL
-    state: directory
-    mode: 0644
-  become: true
+# #config SSL for web 
+# - name: create new folder for SSL
+#   ansible.builtin.file:
+#     path: /home/control/SSL
+#     state: directory
+#     mode: 0644
+#   become: true
 
-- name: copy SSL cert
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: /home/control/SSL 
-  with_fileglob: 
-    - "{{ SSL_cert_path }}/*"
-  become: true
+# - name: enable ssl mod apache 
+#   ansible.builtin.command: a2enmod ssl 
+#   become: true
 
-- name: config SSL
-  ansible.builtin.template:
-    src: "{{ dashboard_conf }}"
-    dest: "{{ dashboard_conf_apache }}"
-    force: true
-    mode: 0644
-  become: true
+# - name: copy SSL cert
+#   ansible.builtin.copy:
+#     src: "{{ item }}"
+#     dest: /home/control/SSL 
+#   with_fileglob: 
+#     - "{{ SSL_cert_path }}/*"
+#   become: true
+
+# - name: config SSL
+#   ansible.builtin.template:
+#     src: "{{ dashboard_conf }}"
+#     dest: "{{ dashboard_conf_apache }}"
+#     force: true
+#     mode: 0644
+#   become: true

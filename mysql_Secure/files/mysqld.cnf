@@ -157,18 +157,6 @@ log-raw = OFF
 secure_auth=ON
 
 #-----------------------------------------------------------------------------------------#
-###SSL certificate (still testing)
-#replace path of ssl cert if needed
-#ssl_ca=ca.pem
-#ssl_cert=server-cert.pem
-#ssl_key=server-key.pem
-#require_secure_transport=ON
-
-#ssl-ca = /etc/mysql/ca-cert.pem
-#ssl-cert = /etc/mysql/server-cert.pem
-#ssl-key = /etc/mysql/server-key.pem
-
-#-----------------------------------------------------------------------------------------#
 ###The password which the client uses is stored in the MASTER info repository, which by
 ###default is a plaintext file. The TABLE MASTER info repository is a bit safer, but with
 ###filesystem access it's still possible to gain access to the password the SLAVE is using

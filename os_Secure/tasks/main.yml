@@ -1,15 +1,14 @@
 ---
 ###task 1: this task include "/tmp, /var, /var/tmp" section for config using fstab file
-- name: Separate partition
-  ansible.builtin.copy:
-    src: "{{ fstab_src }}"
-    dest: "{{ fstab_dst }}"
-    force: true  #replace old file
-    mode: 0644
-  become: true
-  notify: reload-deamon
+# - name: Separate partition
+#   ansible.builtin.copy:
+#     src: "{{ fstab_src }}"
+#     dest: "{{ fstab_dst }}"
+#     force: true  #replace old file
+#     mode: 0644
+#   become: true
+#   notify: reload-deamon
  
-
 ##if system not mounted before, run "mount" command, else run "mount -o remount" command
 # - name: remount
 #   ansible.builtin.command:
@@ -17,18 +16,18 @@
 #   become: true
 
 ##remount /tmp, /var, /var/tmp, /var/log, /var/log/audit, /home
-- name: remount
-  ansible.builtin.shell: mount "{{ item }}" #/var/tmp; /var/log; /var/log/audit; /home
-  loop: "{{ mount_file }}"
-  become: true
+# - name: remount
+#   ansible.builtin.shell: mount "{{ item }}" #/var/tmp; /var/log; /var/log/audit; /home
+#   loop: "{{ mount_file }}"
+#   become: true
 
-- name: check result
-  ansible.builtin.shell: "findmnt -nk /tmp && findmnt -kn /dev/shm"
-  register: mount_output
+# - name: check result
+#   ansible.builtin.shell: "findmnt -nk /tmp && findmnt -kn /dev/shm"
+#   register: mount_output
 
-- name: display output
-  ansible.builtin.debug:
-    var: mount_output.stdout_lines
+# - name: display output
+#   ansible.builtin.debug:
+#     var: mount_output.stdout_lines
 
 ##reconf permission bootloader config
 # chown root:root /boot/grub/grub.cfg
@@ -85,40 +84,6 @@
 #     purge: true
 #   become: true
 
-##Mandatory access control
-##AppArmor provides a Mandatory Access Control (MAC)
-- name: install AppArmor
-  ansible.builtin.apt:
-    name:
-      - apparmor
-      - apparmor-utils
-    state: latest
-  become: true
-
-#GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
-- name: config AppArmor
-  ansible.builtin.copy:
-    src: "{{ grub_src }}"
-    dest: "{{ grb_dest }}"
-    force: true
-    mode: 0644
-  become: true
-  notify: update-grub
-
-## apparmor_status | grep profiles
-## apparmor_status | grep processes
-##set enforce mode or complain mode
-##aa-enforce /etc/apparmor.d/*
-#or
-##aa-complain /etc/apparmor.d/*
-- name: set enforce mode
-  ansible.builtin.raw: aa-enforce /etc/apparmor.d/*
-  become: true
-#or
-# - name: set complain mode
-#   ansible.builtin.raw: aa-complain /etc/apparmor.d/*
-#   become: true
-
 ##Command Line Warning Banners
 - name: Ensure local login warning banner is configured properly
   ansible.builtin.copy:
@@ -132,30 +97,6 @@
 
 ##Ensure permissions on /etc/motd are configured
 
-##solution 1
-# - name: Check if /etc/motd exists
-#   ansible.builtin.stat:
-#     path: "{{ motd_path }}"
-#   register: motd_file_info
-#   # Ignore errors if the file doesn't exist
-#   ignore_errors: yes
-#   tags: test
-
-# - name: show output
-#   ansible.builtin.debug:
-#     var: motd_file_info
-#   tags: test2
-
-# - name: task 8 - Ensure permissions on /etc/motd are configured
-#   ansible.builtin.file:
-#     path: "{{ motd_path }}"
-#     owner: root
-#     group: root
-#     mode: 0600
-#   become: true
-#   when: motd_file_info.stat.exists == true
-
-##solution 2
 - name: Ensure permissions on /etc/motd are configured
   ansible.builtin.file:
     path: "{{ motd_path }}"
@@ -284,16 +225,16 @@
   ignore_errors: true
 
 #if need to use this host firewall, run this task
-- name: install ufw firewall (just use only ufw or nftable)
-  ansible.builtin.apt:
-    name: ufw
-    state: latest
-  become: true
-  notify:
-    - start-ufw
-    - config-ufw-loopback-traffic
-    - uninstall-iptables-persistent
-    - uninstall-nftables
+# - name: install ufw firewall (just use only ufw or nftable)
+#   ansible.builtin.apt:
+#     name: ufw
+#     state: latest
+#   become: true
+#   notify:
+#     - start-ufw
+#     - config-ufw-loopback-traffic
+#     - uninstall-iptables-persistent
+#     - uninstall-nftables
 
 # - name: install nftables (just use only ufw or nftable)
 #   ansible.builtin.apt:
@@ -340,6 +281,14 @@
   loop: "{{ cron_files_name }}"
   become: true
 
+# - name: config syn cookie
+#   ansible.builtin.lineinfile:
+#     path: /etc/sysctl.d/99-sysctl.conf
+#     regexp: '^#net.ipv4.tcp_syncookies='
+#     line: 'net.ipv4.tcp_syncookies=1'
+#     backup: true
+#   become: true
+  
 ##config ssh
 - name: Ensure permissions on /etc/ssh/sshd_config are configured
   ansible.builtin.file:
@@ -379,6 +328,7 @@
     path: "{{ libpam_modules_path }}/pam_pwquality.so" # Update the path if needed
   register: pwquality_file
   become: true
+  tags: T0
 
 - name: Install pam_pwquality package if not present
   ansible.builtin.apt:
@@ -386,11 +336,13 @@
     state: present
   when: pwquality_file.stat.exists == false
   become: true
+  tags: T1
 
 - name: Print a message if pam_pwquality.so was installed
   debug:
     msg: "pam_pwquality.so has been installed."
   when: pwquality_file.stat.exists == false
+  tags: T2
 
 - name: config pam_pwquality
   ansible.builtin.copy:
@@ -402,6 +354,7 @@
     mode: 0644
   become: true
   notify: include-common-password
+  tags: T3
 
 - name: Ensure lockout for failed password attempts is configured
   ansible.builtin.copy:
@@ -413,6 +366,7 @@
     mode: 0644
   become: true
   notify: inactive-passwd-lock
+  tags: T4
 
 - name: Ensure default group for the root account is GID 0
   ansible.builtin.shell: usermod -g 0 root
@@ -468,42 +422,6 @@
     mode: 0644
   become: true
   notify: restart-systemd-journald
-
-##nsure rsyslog is configured
-##un-comment to use this task
-# - name: install rsyslog
-#   ansible.builtin.apt:
-#     name: rsyslog
-#     state: latest
-#   become: true
-#   notify: enabled-rsyslog
-
-# - name: config rsyslog
-#   ansible.builtin.template:
-#     src: "{{ rsyslog_src }}"
-#     dest: "{{ rsyslog_dest }}"
-#     owner: root
-#     group: root
-#     mode: 0644
-#   become: true
-#   notify: enabled-
-
-# ##Configure System Accounting (auditd)
-# - name: install auditd
-#   ansible.builtin.apt:
-#     name: auditd
-#     state: latest
-#   become: true
-#   notify: enabled-auditd
-
-# - name: config auditd.conf
-#   ansible.builtin.template:
-#     src: "{{ auditd_src }}"
-#     dest: "{{ auditd_dest }}"
-#     owner: root
-#     group: root
-#     mode: 0640
-#   become: true
 
 ##system file permissions
 - name: credential file permissions

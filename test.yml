@@ -1,18 +1,15 @@
 ---
 - name: test
-  hosts: localhost
-  vars:
-    splunk_version: 9.0.4.1
-    splunk_tgz: splunk-9.0.4.1-419ad9369127-Linux-x86_64.tgz
+  hosts: openstack_controller
+  vars: 
+    - SSL_cert_path: /home/ansible/Desktop/DOAN/ApacheHTTP_secure/files/SSL_cert
   tasks:
-    - name: Download by wget {{ splunk_tgz }}
-      ansible.builtin.get_url:
-        url: "https://download.splunk.com/products/splunk/releases/{{ splunk_version }}/linux/{{ splunk_tgz }}"
-        checksum: "md5:{{ splunk_tgz_checksum }}"
-        dest: /home/ansible
-        mode: '0640'  
-        owner: root
-        group: root
+    - name: copy SSL cert
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /home/control/SSL 
+      with_fileglob: 
+        - "{{ SSL_cert_path }}/*"
       become: true
  
 
